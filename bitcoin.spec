@@ -1,15 +1,16 @@
 %define _hardened_build 1
 %global selinux_variants mls strict targeted
+%global segwit uasfsegwit0.3
 
 Name:		bitcoin
 Version:	0.14.1
-Release:	2%{?prerelease}%{?dist}
+Release:	3%{?prerelease}%{?dist}
 Summary:	Peer to Peer Cryptographic Currency
 
 Group:		Applications/System
 License:	MIT
 URL:		http://bitcoin.org/
-Source0:	http://github.com/bitcoin/%{name}/archive/v%{version}%{?prerelease}.tar.gz
+Source0:	http://github.com/%{?segwit:UASF}%{!?segwit:bitcoin}/%{name}/archive/v%{version}%{?segwit:-%{segwit}}%{?prerelease}.tar.gz
 Source1:    bitcoind.tmpfiles
 Source2:	bitcoin.sysconfig
 Source3:	bitcoin.service
@@ -162,7 +163,7 @@ need this package.
 
 
 %prep
-%setup -q -n %{name}-%{version}%{?prerelease}
+%setup -q -n %{name}-%{version}%{?segwit:-%{segwit}}%{?prerelease}
 %patch1 -p1
 %patch2 -p1
 %patch99 -p1
@@ -359,6 +360,9 @@ fi
 
 
 %changelog
+* Tue May 23 2017 Simone Caronni <negativo17@gmail.com> - 0.14.1-3
+- Switch to UASF sources.
+
 * Sun May 21 2017 Michael Hampton <bitcoin@ringingliberty.com> 0.14.1-2
 - Add explicit python 2 dependency for F26+
 
