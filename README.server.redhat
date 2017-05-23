@@ -1,0 +1,89 @@
+Using bitcoind on Fedora and Red Hat Enterprise Linux
+=====================================================
+
+SELinux
+-------
+
+This build of bitcoind includes an SELinux policy which restricts access to the
+system Bitcoin wallet and database files. The effect of this policy is twofold:
+
+ 1. Confined system services and users cannot read the Bitcoin wallet or
+    database files.
+ 2. The Bitcoin daemon itself cannot read any other file on the system.
+
+Note well that unconfined users and services are subject only to discretionary
+access controls, i.e. standard Unix permissions. Confining your users, and
+running no unconfined services, is strongly recommended. See the Red Hat
+Enterprise Linux SELinux Guide for further details on SELinux.
+
+On RHEL 6, to start bitcoind manually, use the command
+
+    run_init service bitcoin start
+
+to ensure that the appropriate SELinux contexts are applied. This is not
+necessary if bitcoind is started automatically at boot time.
+
+To repair incorrect SELinux contexts, run the command:
+
+    restorecon -r -v /etc/bitcoin /var/lib/bitcoin
+
+Default Paths
+-------------
+
+This bulid of bitcoind is installed to FHS-compliant paths and reads its
+configuration files, wallet and database from standard paths. These differ from
+the upstream defaults:
+
+ * The configuration file is located at /etc/bitcoin/bitcoin.conf
+ * All other data, including the wallet, is stored in /var/lib/bitcoin
+
+Configuration
+-------------
+
+There is no configuration file installed by default, and bitcoind runs fine
+without one. However, in order to use the bitcoin-cli to communicate with
+bitcoind, you must create a bitcoin.conf file and set an rpcpassword in it.
+The bitcoin.conf file must be readable only by users who are authorized to
+use the bitcoin-cli command; you must do this yourself by adding users to the
+bitcoin group or creating other appropriate groups.
+
+A sample configuration file is available in /usr/share/doc/bitcoin-server-*.
+
+The bitcoin.conf file should be readable only by users authorized to
+communicate with bitcoind; if you have added authorized users to the bitcoin
+group, then these commands should be sufficient:
+
+chown -R bitcoin.bitcoin /etc/bitcoin
+chmod -R u+rw,g+r,o= /etc/bitcoin
+
+Berkeley DB
+-----------
+
+On Red Hat Enterprise Linux 6, bitcoin uses Berkeley DB 4.7. On all other
+platforms, including Fedora and the upstream build, bitcoin uses Berkeley DB
+4.8. Oracle makes clear that binary compatibility is not guaranteed even
+between minor releases of Berkeley DB. This has implications when you upgrade
+your RHEL 6 system to RHEL 7, or if you move your wallet to and from a RHEL 6
+system.
+
+It is strongly recommended that if you change Berkeley DB versions
+you first dump your wallet from the old system into a text file, and then
+import the wallet into the new system.
+
+To dump or import a wallet from a Bitcoin daemon, you will need to use the
+bitcoin-cli utility.
+
+To dump your wallet on the old system, enter the command:
+
+    bitcoin-cli dumpwallet /path/to/filename.txt
+
+Copy filename.txt from the old system to the new system, being aware that it
+is not encrypted and taking appropriate precautions.
+
+To import your wallet on the new system, enter the command:
+
+    bitcoin-cli importwallet /path/to/filename.txt
+
+Bitcoin will automatically begin rescanning the block chain after the import is
+complete. The rescan will take several minutes, depending on the speed of the
+system's CPU and hard drives.

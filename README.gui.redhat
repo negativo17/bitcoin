@@ -1,0 +1,37 @@
+Using bitcoin-qt on Fedora and Red Hat Enterprise Linux
+=======================================================
+
+Berkeley DB
+-----------
+
+On Red Hat Enterprise Linux 6, bitcoin uses Berkeley DB 4.7. On all other
+platforms, including Fedora and the upstream build, bitcoin uses Berkeley DB
+4.8. Oracle makes clear that binary compatibility is not guaranteed even
+between minor releases of Berkeley DB. This has implications when you upgrade
+your RHEL 6 system to RHEL 7, or if you move your wallet to and from a RHEL 6
+system.
+
+It is strongly recommended that if you change Berkeley DB versions
+you first dump your wallet from the old system into a text file, and then
+import the wallet into the new system.
+
+To dump your wallet on the old system:
+
+In the Bitcoin GUI, click the Help menu then select Debug Window. In the debug
+window, click Console, and enter the command:
+
+    dumpwallet /path/to/filename.txt
+
+Copy filename.txt from the old system to the new system, being aware that it
+is not encrypted and taking appropriate precautions.
+
+To import your wallet on the new system:
+
+In the Bitcoin GUI, click the Help menu then select Debug Window. In the debug
+window, click Console, and enter the command:
+
+    importwallet /path/to/filename.txt
+
+Bitcoin will automatically begin rescanning the block chain after the import is
+complete. The rescan will take several minutes, depending on the speed of the
+system's CPU and hard drives.

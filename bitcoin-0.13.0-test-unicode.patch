@@ -1,0 +1,12 @@
+diff -up bitcoin-0.13.0/qa/rpc-tests/test_framework/util.py.unicode bitcoin-0.13.0/qa/rpc-tests/test_framework/util.py
+--- bitcoin-0.13.0/qa/rpc-tests/test_framework/util.py.unicode	2016-07-19 10:25:02.000000000 +0000
++++ bitcoin-0.13.0/qa/rpc-tests/test_framework/util.py	2016-07-27 02:51:47.477922705 +0000
+@@ -167,7 +167,7 @@ def initialize_datadir(dirname, n):
+     return datadir
+ 
+ def rpc_auth_pair(n):
+-    return 'rpcuser💻' + str(n), 'rpcpass🔑' + str(n)
++    return 'rpcuser' + str(n), 'rpcpass' + str(n)
+ 
+ def rpc_url(i, rpchost=None):
+     rpc_u, rpc_p = rpc_auth_pair(i)

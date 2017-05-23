@@ -1,0 +1,12 @@
+Using bitcoin-cli and bitcoin-tx on Fedora and Red Hat Enterprise Linux
+=======================================================================
+
+The bitcoin-cli and bitcoin-tx commands allow you to communicate with a
+running Bitcoin daemon on a local or remote host.
+
+Configuration
+-------------
+
+By default bitcoin-cli looks for configuration at /etc/bitcoin/bitcoin.conf.
+This must be readable only by users authorized to communicate with bitcoind.
+See the README file included with bitcoin-server for further details.
