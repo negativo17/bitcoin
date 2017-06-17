@@ -1,16 +1,15 @@
 %define _hardened_build 1
 %global selinux_variants mls strict targeted
-%global segwit uasfsegwit0.3
 
 Name:		bitcoin
-Version:	0.14.1
-Release:	3%{?prerelease}%{?dist}
+Version:	0.14.2
+Release:	1%{?dist}
 Summary:	Peer to Peer Cryptographic Currency
 
 Group:		Applications/System
 License:	MIT
 URL:		http://bitcoin.org/
-Source0:	http://github.com/%{?segwit:UASF}%{!?segwit:bitcoin}/%{name}/archive/v%{version}%{?segwit:-%{segwit}}%{?prerelease}.tar.gz
+Source0:	http://github.com/bitcoin/%{name}/archive/v%{version}%{?prerelease}.tar.gz
 Source1:    bitcoind.tmpfiles
 Source2:	bitcoin.sysconfig
 Source3:	bitcoin.service
@@ -24,6 +23,7 @@ Source10:	README.gui.redhat
 
 Patch1: bitcoin-0.13.0-test-unicode.patch
 Patch2: bitcoin-0.14.1-test-timeout.patch
+Patch3: bitcoin-0.14.2-uasfsegwit0.3.patch
 
 # Dest change address patch for Lamassu Bitcoin machine
 Patch99: bitcoin-0.14.0-destchange.patch
@@ -163,9 +163,10 @@ need this package.
 
 
 %prep
-%setup -q -n %{name}-%{version}%{?segwit:-%{segwit}}%{?prerelease}
+%setup -q -n %{name}-%{version}%{?prerelease}
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
 %patch99 -p1
 
 # Install README files
@@ -360,6 +361,9 @@ fi
 
 
 %changelog
+* Sat Jun 17 2017 Simone Caronni <negativo17@gmail.com> - 0.14.2-1
+- Update to 0.14.2, use official sources + UASF patch.
+
 * Tue May 23 2017 Simone Caronni <negativo17@gmail.com> - 0.14.1-3
 - Switch to UASF sources.
 
