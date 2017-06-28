@@ -5,10 +5,9 @@ Name:		bitcoin
 Version:	0.14.2
 Release:	1%{?dist}
 Summary:	Peer to Peer Cryptographic Currency
-
-Group:		Applications/System
 License:	MIT
 URL:		http://bitcoin.org/
+
 Source0:	http://github.com/bitcoin/%{name}/archive/v%{version}%{?prerelease}.tar.gz
 Source1:    bitcoind.tmpfiles
 Source2:	bitcoin.sysconfig
@@ -27,9 +26,6 @@ Patch3: bitcoin-0.14.2-uasfsegwit0.3.patch
 
 # Dest change address patch for Lamassu Bitcoin machine
 Patch99: bitcoin-0.14.0-destchange.patch
-
-
-BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 BuildRequires:  qt5-qtbase-devel qt5-linguist
 BuildRequires:  qrencode-devel miniupnpc-devel protobuf-devel openssl-devel
@@ -77,7 +73,6 @@ issuing of bitcoins is carried out collectively by the network.
 
 %package core
 Summary:    Peer to Peer Cryptographic Currency
-Group:      Applications/System
 Obsoletes:  %{name} < %{version}-%{release}
 Provides:   %{name} = %{version}-%{release}
 
@@ -202,12 +197,10 @@ make check
 pushd src
 srcdir=. test/bitcoin-util-test.py
 popd
-LD_LIBRARY_PATH=/opt/openssl-compat-bitcoin/lib PYTHONUNBUFFERED=1 qa/pull-tester/rpc-tests.py
+#LD_LIBRARY_PATH=/opt/openssl-compat-bitcoin/lib PYTHONUNBUFFERED=1 qa/pull-tester/rpc-tests.py
 
 
 %install
-rm -rf %{buildroot}
-mkdir %{buildroot}
 cp contrib/debian/examples/bitcoin.conf bitcoin.conf.example
 
 make INSTALL="install -p" CP="cp -p" DESTDIR=%{buildroot} install
@@ -308,8 +301,6 @@ fi
 
 
 %files core
-%defattr(-,root,root,-)
-%license COPYING
 %doc README.md README.gui.redhat doc/assets-attribution.md doc/bips.md doc/files.md doc/reduce-traffic.md doc/release-notes.md doc/tor.md bitcoin.conf.example
 %{_bindir}/bitcoin-qt
 %{_datadir}/applications/bitcoin-qt.desktop
@@ -319,15 +310,12 @@ fi
 
 
 %files libs
-%defattr(-,root,root,-)
 %license COPYING
 %doc doc/README.md doc/shared-libraries.md
 %{_libdir}/libbitcoinconsensus.so*
 
 
 %files devel
-%defattr(-,root,root,-)
-%license COPYING
 %doc doc/README.md doc/developer-notes.md doc/shared-libraries.md
 %{_includedir}/bitcoinconsensus.h
 %{_libdir}/libbitcoinconsensus.a
@@ -336,8 +324,6 @@ fi
 
 
 %files utils
-%defattr(-,root,root,-)
-%license COPYING
 %doc README.utils.redhat bitcoin.conf.example doc/README.md
 %{_bindir}/bitcoin-cli
 %{_bindir}/bitcoin-tx
@@ -346,8 +332,6 @@ fi
 
 
 %files server
-%defattr(-,root,root,-)
-%license COPYING
 %doc bitcoin.conf.example README.server.redhat doc/README.md doc/REST-interface.md doc/bips.md doc/dnsseed-policy.md doc/files.md doc/reduce-traffic.md doc/release-notes.md doc/tor.md doc/zmq.md
 %dir %attr(750,bitcoin,bitcoin) %{_localstatedir}/lib/bitcoin
 %dir %attr(750,bitcoin,bitcoin) %{_sysconfdir}/bitcoin
@@ -363,6 +347,9 @@ fi
 %changelog
 * Sat Jun 17 2017 Simone Caronni <negativo17@gmail.com> - 0.14.2-1
 - Update to 0.14.2, use official sources + UASF patch.
+- Remove obsolete RPM tags.
+- Leave license only on libs subpackage.
+- Skip RPC tests, they do not run in mock.
 
 * Tue May 23 2017 Simone Caronni <negativo17@gmail.com> - 0.14.1-3
 - Switch to UASF sources.
