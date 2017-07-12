@@ -17,9 +17,6 @@ Source1:    bitcoind.tmpfiles
 Source2:    bitcoin.sysconfig
 Source3:    bitcoin.service
 Source4:    bitcoin.init
-Source5:    bitcoin.te
-Source6:    bitcoin.fc
-Source7:    bitcoin.if
 Source8:    README.server.redhat
 Source9:    README.utils.redhat
 Source10:   README.gui.redhat
@@ -169,11 +166,6 @@ need this package.
 # Install README files
 cp -p %{SOURCE8} %{SOURCE9} %{SOURCE10} .
 
-# Prep SELinux policy
-mkdir SELinux
-cp -p %{SOURCE5} %{SOURCE6} %{SOURCE7} SELinux
-
-
 %build
 # Build Bitcoin
 ./autogen.sh
@@ -182,7 +174,7 @@ cp -p %{SOURCE5} %{SOURCE6} %{SOURCE7} SELinux
 make %{?_smp_mflags}
 
 # Build SELinux policy
-pushd SELinux
+pushd contrib/rpm
 for selinuxvariant in %{selinux_variants}
 do
   make NAME=${selinuxvariant} -f %{_datadir}/selinux/devel/Makefile
@@ -242,7 +234,7 @@ rm -f %{buildroot}%{_bindir}/bench_bitcoin
 for selinuxvariant in %{selinux_variants}
 do
     install -d %{buildroot}%{_datadir}/selinux/${selinuxvariant}
-    install -p -m 644 SELinux/bitcoin.pp.${selinuxvariant} \
+    install -p -m 644 contrib/rpm/bitcoin.pp.${selinuxvariant} \
         %{buildroot}%{_datadir}/selinux/${selinuxvariant}/bitcoin.pp
 done
 
@@ -341,7 +333,6 @@ fi
 %dir %attr(750,bitcoin,bitcoin) %{_localstatedir}/lib/bitcoin
 %dir %attr(750,bitcoin,bitcoin) %{_sysconfdir}/bitcoin
 %config(noreplace) %attr(600,root,root) %{_sysconfdir}/sysconfig/bitcoin
-%doc SELinux/*
 %{_sbindir}/bitcoind
 %{_unitdir}/bitcoin.service
 %{_tmpfilesdir}/bitcoin.conf
