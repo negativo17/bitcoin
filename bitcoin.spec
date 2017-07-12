@@ -1,28 +1,31 @@
 %define _hardened_build 1
 %global selinux_variants mls strict targeted
+%global _compldir %{_datadir}/bash-completion/completions
 
-Name:		bitcoin
-Version:	0.14.2
-Release:	1%{?dist}
-Summary:	Peer to Peer Cryptographic Currency
-License:	MIT
-URL:		http://bitcoin.org/
+# Comment to use official
+%global segwit uasfsegwit1.0
 
-Source0:	http://github.com/bitcoin/%{name}/archive/v%{version}%{?prerelease}.tar.gz
+Name:       bitcoin
+Version:    0.14.2
+Release:    2%{?dist}
+Summary:    Peer to Peer Cryptographic Currency
+License:    MIT
+URL:        http://bitcoin.org/
+
+Source0:    http://github.com/%{?segwit:UASF}%{!?segwit:bitcoin}/%{name}/archive/v%{version}%{?segwit:-%{segwit}}.tar.gz#/%{name}-%{version}%{?segwit:-%{segwit}}.tar.gz
 Source1:    bitcoind.tmpfiles
-Source2:	bitcoin.sysconfig
-Source3:	bitcoin.service
-Source4:	bitcoin.init
-Source5:	bitcoin.te
-Source6:	bitcoin.fc
-Source7:	bitcoin.if
-Source8:	README.server.redhat
-Source9:	README.utils.redhat
-Source10:	README.gui.redhat
+Source2:    bitcoin.sysconfig
+Source3:    bitcoin.service
+Source4:    bitcoin.init
+Source5:    bitcoin.te
+Source6:    bitcoin.fc
+Source7:    bitcoin.if
+Source8:    README.server.redhat
+Source9:    README.utils.redhat
+Source10:   README.gui.redhat
 
 Patch1: bitcoin-0.13.0-test-unicode.patch
 Patch2: bitcoin-0.14.1-test-timeout.patch
-Patch3: bitcoin-0.14.2-uasfsegwit0.3.patch
 
 # Dest change address patch for Lamassu Bitcoin machine
 Patch99: bitcoin-0.14.0-destchange.patch
@@ -30,9 +33,9 @@ Patch99: bitcoin-0.14.0-destchange.patch
 BuildRequires:  qt5-qtbase-devel qt5-linguist
 BuildRequires:  qrencode-devel miniupnpc-devel protobuf-devel openssl-devel
 BuildRequires:  desktop-file-utils autoconf automake
-BuildRequires:	checkpolicy selinux-policy-devel selinux-policy-doc
-BuildRequires:	boost-devel libdb4-cxx-devel libevent-devel
-BuildRequires:	libtool java
+BuildRequires:  checkpolicy selinux-policy-devel selinux-policy-doc
+BuildRequires:  boost-devel libdb4-cxx-devel libevent-devel
+BuildRequires:  libtool java
 
 # There's one last Python 2 script left in the test suite, so we still need
 # both Python 2 and 3 to run all tests.
@@ -53,7 +56,7 @@ BuildRequires:  python3-zmq zeromq-devel
 # the testsuite on RHEL7, until Red Hat fixes OpenSSL on RHEL7. It has already
 # been fixed on Fedora. Bitcoin itself no longer needs OpenSSL for secp256k1.
 %if 0%{?rhel}
-BuildRequires:	openssl-compat-bitcoin-libs
+BuildRequires:  openssl-compat-bitcoin-libs
 BuildRequires:  python34
 %endif
 
@@ -78,35 +81,35 @@ Provides:   %{name} = %{version}-%{release}
 
 
 %package libs
-Summary:	Peer-to-peer digital currency
+Summary:    Peer-to-peer digital currency
 Conflicts:  bitcoinxt-libs bitcoinclassic-libs
 
 
 %package devel
-Summary:	Peer-to-peer digital currency
-Requires:	bitcoin-libs%{?_isa} = %{version}-%{release}
+Summary:    Peer-to-peer digital currency
+Requires:   bitcoin-libs%{?_isa} = %{version}-%{release}
 Conflicts:  bitcoinxt-devel bitcoinclassic-devel
 
 
 %package utils
-Summary:	Peer-to-peer digital currency
-Obsoletes:	bitcoin-cli <= 0.9.3
+Summary:    Peer-to-peer digital currency
+Obsoletes:  bitcoin-cli <= 0.9.3
 Conflicts:  bitcoinxt-utils bitcoinclassic-utils
 
 
 %package server
-Summary:	Peer-to-peer digital currency
-Requires(post):	systemd
-Requires(preun):	systemd
-Requires(postun):	systemd
-BuildRequires:	systemd
-Requires(pre):	shadow-utils
-Requires(post):	/usr/sbin/semodule, /sbin/restorecon, /sbin/fixfiles
-Requires(postun):	/usr/sbin/semodule, /sbin/restorecon, /sbin/fixfiles
-Requires:	selinux-policy
-Requires:	policycoreutils-python
+Summary:    Peer-to-peer digital currency
+Requires(post): systemd
+Requires(preun):    systemd
+Requires(postun):   systemd
+BuildRequires:  systemd
+Requires(pre):  shadow-utils
+Requires(post): /usr/sbin/semodule, /sbin/restorecon, /sbin/fixfiles
+Requires(postun):   /usr/sbin/semodule, /sbin/restorecon, /sbin/fixfiles
+Requires:   selinux-policy
+Requires:   policycoreutils-python
 Requires:   openssl-libs
-Requires:	bitcoin-utils%{_isa} = %{version}
+Requires:   bitcoin-utils%{_isa} = %{version}
 Conflicts:  bitcoinxt-server bitcoinclassic-server
 
 
@@ -158,10 +161,9 @@ need this package.
 
 
 %prep
-%setup -q -n %{name}-%{version}%{?prerelease}
+%setup -q -n %{name}-%{version}%{?segwit:-%{segwit}}
 %patch1 -p1
 %patch2 -p1
-%patch3 -p1
 %patch99 -p1
 
 # Install README files
@@ -221,6 +223,8 @@ install -D -m600 -p %{SOURCE2} %{buildroot}%{_sysconfdir}/sysconfig/bitcoin
 install -D -m644 -p %{SOURCE3} %{buildroot}%{_unitdir}/bitcoin.service
 install -d -m750 -p %{buildroot}%{_localstatedir}/lib/bitcoin
 install -d -m750 -p %{buildroot}%{_sysconfdir}/bitcoin
+install -D -m644 -p contrib/bitcoin-cli.bash-completion %{buildroot}%{_compldir}/bitcoin-cli
+install -D -m644 -p contrib/bitcoind.bash-completion %{buildroot}%{_compldir}/bitcoind
 install -D -m644 -p doc/man/bitcoind.1 %{buildroot}%{_mandir}/man1/bitcoind.1
 install -D -m644 -p doc/man/bitcoin-cli.1 %{buildroot}%{_mandir}/man1/bitcoin-cli.1
 install -D -m644 -p doc/man/bitcoin-qt.1 %{buildroot}%{_mandir}/man1/bitcoin-qt.1
@@ -237,9 +241,9 @@ rm -f %{buildroot}%{_bindir}/bench_bitcoin
 # Install SELinux policy
 for selinuxvariant in %{selinux_variants}
 do
-	install -d %{buildroot}%{_datadir}/selinux/${selinuxvariant}
-	install -p -m 644 SELinux/bitcoin.pp.${selinuxvariant} \
-		%{buildroot}%{_datadir}/selinux/${selinuxvariant}/bitcoin.pp
+    install -d %{buildroot}%{_datadir}/selinux/${selinuxvariant}
+    install -p -m 644 SELinux/bitcoin.pp.${selinuxvariant} \
+        %{buildroot}%{_datadir}/selinux/${selinuxvariant}/bitcoin.pp
 done
 
 
@@ -250,8 +254,8 @@ rm -rf %{buildroot}
 %pre server
 getent group bitcoin >/dev/null || groupadd -r bitcoin
 getent passwd bitcoin >/dev/null ||
-	useradd -r -g bitcoin -d /var/lib/bitcoin -s /sbin/nologin \
-	-c "Bitcoin wallet server" bitcoin
+    useradd -r -g bitcoin -d /var/lib/bitcoin -s /sbin/nologin \
+    -c "Bitcoin wallet server" bitcoin
 exit 0
 
 
@@ -259,9 +263,9 @@ exit 0
 %systemd_post bitcoin.service
 for selinuxvariant in %{selinux_variants}
 do
-	/usr/sbin/semodule -s ${selinuxvariant} -i \
-		%{_datadir}/selinux/${selinuxvariant}/bitcoin.pp \
-		&> /dev/null || :
+    /usr/sbin/semodule -s ${selinuxvariant} -i \
+        %{_datadir}/selinux/${selinuxvariant}/bitcoin.pp \
+        &> /dev/null || :
 done
 # FIXME This is less than ideal, but until dwalsh gives me a better way...
 /usr/sbin/semanage port -a -t bitcoin_port_t -p tcp 8332
@@ -283,20 +287,20 @@ done
 %postun server
 %systemd_postun bitcoin.service
 if [ $1 -eq 0 ] ; then
-	# FIXME This is less than ideal, but until dwalsh gives me a better way...
-	/usr/sbin/semanage port -d -p tcp 8332
-	/usr/sbin/semanage port -d -p tcp 8333
-	/usr/sbin/semanage port -d -p tcp 18332
-	/usr/sbin/semanage port -d -p tcp 18333
-	for selinuxvariant in %{selinux_variants}
-	do
-		/usr/sbin/semodule -s ${selinuxvariant} -r bitcoin \
-		&> /dev/null || :
-	done
-	/sbin/fixfiles -R bitcoin-server restore &> /dev/null || :
-	[ -d %{_localstatedir}/lib/bitcoin ] && \
-		/sbin/restorecon -R %{_localstatedir}/lib/bitcoin \
-		&> /dev/null || :
+    # FIXME This is less than ideal, but until dwalsh gives me a better way...
+    /usr/sbin/semanage port -d -p tcp 8332
+    /usr/sbin/semanage port -d -p tcp 8333
+    /usr/sbin/semanage port -d -p tcp 18332
+    /usr/sbin/semanage port -d -p tcp 18333
+    for selinuxvariant in %{selinux_variants}
+    do
+        /usr/sbin/semodule -s ${selinuxvariant} -r bitcoin \
+        &> /dev/null || :
+    done
+    /sbin/fixfiles -R bitcoin-server restore &> /dev/null || :
+    [ -d %{_localstatedir}/lib/bitcoin ] && \
+        /sbin/restorecon -R %{_localstatedir}/lib/bitcoin \
+        &> /dev/null || :
 fi
 
 
@@ -327,6 +331,7 @@ fi
 %doc README.utils.redhat bitcoin.conf.example doc/README.md
 %{_bindir}/bitcoin-cli
 %{_bindir}/bitcoin-tx
+%{_compldir}/bitcoin-cli
 %{_mandir}/man1/bitcoin-cli.1*
 %{_mandir}/man1/bitcoin-tx.1*
 
@@ -341,10 +346,17 @@ fi
 %{_unitdir}/bitcoin.service
 %{_tmpfilesdir}/bitcoin.conf
 %{_mandir}/man1/bitcoind.1*
+%{_compldir}/bitcoind
 %{_datadir}/selinux/*/bitcoin.pp
 
 
 %changelog
+* Wed Jul 12 2017 Simone Caronni <negativo17@gmail.com> - 0.14.2-2
+- Update to segwit 1.0 release. Drop patch and use official tag as it contains a
+  lot of 0.14.3 backports. Use tag and not tarball as they dropped most of the
+  contrib folder from it.
+- Add bash completion files.
+
 * Sat Jun 17 2017 Simone Caronni <negativo17@gmail.com> - 0.14.2-1
 - Update to 0.14.2, use official sources + UASF patch.
 - Remove obsolete RPM tags.
