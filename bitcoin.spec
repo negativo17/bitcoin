@@ -129,10 +129,10 @@ Conflicts:  bitcoinxt-utils
 Conflicts:  bitcoinclassic-utils
 
 %description utils 
-Bitcoin is an experimental new digital currency that enables instant
-payments to anyone, anywhere in the world. Bitcoin uses peer-to-peer
-technology to operate with no central authority: managing transactions
-and issuing money are carried out collectively by the network.
+Bitcoin is an experimental new digital currency that enables instant payments to
+anyone, anywhere in the world. Bitcoin uses peer-to-peer technology to operate
+with no central authority: managing transactions and issuing money are carried
+out collectively by the network.
 
 This package provides bitcoin-cli, a utility to communicate with and
 control a Bitcoin server via its RPC protocol, and bitcoin-tx, a utility
