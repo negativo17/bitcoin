@@ -7,32 +7,44 @@
 
 Name:       bitcoin
 Version:    0.14.2
-Release:    2%{?dist}
+Release:    3%{?dist}
 Summary:    Peer to Peer Cryptographic Currency
 License:    MIT
 URL:        http://bitcoin.org/
 
 Source0:    http://github.com/%{?segwit:UASF}%{!?segwit:bitcoin}/%{name}/archive/v%{version}%{?segwit:-%{segwit}}.tar.gz#/%{name}-%{version}%{?segwit:-%{segwit}}.tar.gz
-Source1:    bitcoind.tmpfiles
-Source2:    bitcoin.sysconfig
-Source3:    bitcoin.service
-Source4:    bitcoin.init
+Source1:    %{name}-tmpfiles.conf
+Source2:    %{name}.sysconfig
+Source3:    %{name}.service
+Source4:    %{name}.init
 Source8:    README.server.redhat
 Source9:    README.utils.redhat
 Source10:   README.gui.redhat
 
-Patch1: bitcoin-0.13.0-test-unicode.patch
-Patch2: bitcoin-0.14.1-test-timeout.patch
+Patch1:     %{name}-0.13.0-test-unicode.patch
+Patch2:     %{name}-0.14.1-test-timeout.patch
 
 # Dest change address patch for Lamassu Bitcoin machine
-Patch99: bitcoin-0.14.0-destchange.patch
+Patch99:    %{name}-0.14.0-destchange.patch
 
-BuildRequires:  qt5-qtbase-devel qt5-linguist
-BuildRequires:  qrencode-devel miniupnpc-devel protobuf-devel openssl-devel
-BuildRequires:  desktop-file-utils autoconf automake
-BuildRequires:  checkpolicy selinux-policy-devel selinux-policy-doc
-BuildRequires:  boost-devel libdb4-cxx-devel libevent-devel
-BuildRequires:  libtool java
+BuildRequires:  autoconf
+BuildRequires:  automake
+BuildRequires:  boost-devel
+BuildRequires:  checkpolicy
+BuildRequires:  desktop-file-utils
+BuildRequires:  java
+BuildRequires:  libdb4-cxx-devel
+BuildRequires:  libevent-devel
+BuildRequires:  libtool
+BuildRequires:  miniupnpc-devel
+BuildRequires:  openssl-devel
+BuildRequires:  protobuf-devel
+BuildRequires:  qrencode-devel
+BuildRequires:  qt5-linguist
+BuildRequires:  qt5-qtbase-devel
+BuildRequires:  selinux-policy-devel
+BuildRequires:  selinux-policy-doc
+BuildRequires:  systemd
 
 # There's one last Python 2 script left in the test suite, so we still need
 # both Python 2 and 3 to run all tests.
@@ -46,7 +58,8 @@ BuildRequires: python
 # ZeroMQ not testable yet on RHEL due to lack of python3-zmq so
 # enable only for Fedora
 %if 0%{?fedora}
-BuildRequires:  python3-zmq zeromq-devel
+BuildRequires:  python3-zmq
+BuildRequires:  zeromq-devel
 %endif
 
 # Python tests still use OpenSSL for secp256k1, so we still need this to run
@@ -59,56 +72,22 @@ BuildRequires:  python34
 
 # python3-zmq not available on RHEL/CentOS, so don't build it yet
 %if 0%{?fedora}
-BuildRequires:  zeromq-devel python3-zmq
+BuildRequires:  zeromq-devel
+BuildRequires:  python3-zmq
 %endif
 
-Conflicts:  bitcoinxt bitcoinclassic
-
+Conflicts:      bitcoinxt
+Conflicts:      bitcoinclassic
 
 %description
 Bitcoin is a digital cryptographic currency that uses peer-to-peer technology to
 operate with no central authority or banks; managing transactions and the
 issuing of bitcoins is carried out collectively by the network.
 
-
 %package core
 Summary:    Peer to Peer Cryptographic Currency
 Obsoletes:  %{name} < %{version}-%{release}
 Provides:   %{name} = %{version}-%{release}
-
-
-%package libs
-Summary:    Peer-to-peer digital currency
-Conflicts:  bitcoinxt-libs bitcoinclassic-libs
-
-
-%package devel
-Summary:    Peer-to-peer digital currency
-Requires:   bitcoin-libs%{?_isa} = %{version}-%{release}
-Conflicts:  bitcoinxt-devel bitcoinclassic-devel
-
-
-%package utils
-Summary:    Peer-to-peer digital currency
-Obsoletes:  bitcoin-cli <= 0.9.3
-Conflicts:  bitcoinxt-utils bitcoinclassic-utils
-
-
-%package server
-Summary:    Peer-to-peer digital currency
-Requires(post): systemd
-Requires(preun):    systemd
-Requires(postun):   systemd
-BuildRequires:  systemd
-Requires(pre):  shadow-utils
-Requires(post): /usr/sbin/semodule, /sbin/restorecon, /sbin/fixfiles
-Requires(postun):   /usr/sbin/semodule, /sbin/restorecon, /sbin/fixfiles
-Requires:   selinux-policy
-Requires:   policycoreutils-python
-Requires:   openssl-libs
-Requires:   bitcoin-utils%{_isa} = %{version}
-Conflicts:  bitcoinxt-server bitcoinclassic-server
-
 
 %description core
 Bitcoin is a digital cryptographic currency that uses peer-to-peer technology to
@@ -118,6 +97,10 @@ issuing of bitcoins is carried out collectively by the network.
 This package contains the Qt based graphical client and node. If you are looking
 to run a Bitcoin wallet, this is probably the package you want.
 
+%package libs
+Summary:    Peer-to-peer digital currency
+Conflicts:  bitcoinxt-libs
+Conflicts:  bitcoinclassic-libs
 
 %description libs
 This package provides the bitcoinconsensus shared libraries. These libraries
@@ -126,6 +109,11 @@ functionality.
 
 Unless you know need this package, you probably do not.
 
+%package devel
+Summary:    Peer-to-peer digital currency
+Requires:   %{name}-libs%{?_isa} = %{version}-%{release}
+Conflicts:  bitcoinxt-devel
+Conflicts:  bitcoinclassic-devel
 
 %description devel
 This package contains the header files and static library for the
@@ -134,6 +122,11 @@ that wants to link against that library, then you need this package installed.
 
 Most people do not need this package installed.
 
+%package utils
+Summary:    Peer-to-peer digital currency
+Obsoletes:  %{name}-cli <= 0.9.3
+Conflicts:  bitcoinxt-utils
+Conflicts:  bitcoinclassic-utils
 
 %description utils 
 Bitcoin is an experimental new digital currency that enables instant
@@ -145,6 +138,17 @@ This package provides bitcoin-cli, a utility to communicate with and
 control a Bitcoin server via its RPC protocol, and bitcoin-tx, a utility
 to create custom Bitcoin transactions.
 
+%package server
+Summary:            Peer-to-peer digital currency
+Requires(pre):      shadow-utils
+Requires(post):     /usr/sbin/semodule, /sbin/restorecon, /sbin/fixfiles
+Requires(postun):   /usr/sbin/semodule, /sbin/restorecon, /sbin/fixfiles
+Requires:           selinux-policy
+Requires:           policycoreutils-python
+Requires:           openssl-libs
+Requires:           %{name}-utils%{_isa} = %{version}
+Conflicts:          bitcoinxt-server
+Conflicts:          bitcoinclassic-server
 
 %description server
 This package provides a stand-alone bitcoin-core daemon. For most users, this
@@ -156,7 +160,6 @@ bitcoin-core node they use to connect to the network.
 If you use the graphical bitcoin-core client then you almost certainly do not
 need this package.
 
-
 %prep
 %setup -q -n %{name}-%{version}%{?segwit:-%{segwit}}
 %patch1 -p1
@@ -167,9 +170,10 @@ need this package.
 cp -p %{SOURCE8} %{SOURCE9} %{SOURCE10} .
 
 %build
-# Build Bitcoin
 ./autogen.sh
-%configure --enable-reduce-exports --enable-glibc-back-compat
+%configure \
+    --disable-silent-rules \
+    --enable-reduce-exports
 
 make %{?_smp_mflags}
 
@@ -178,24 +182,22 @@ pushd contrib/rpm
 for selinuxvariant in %{selinux_variants}
 do
   make NAME=${selinuxvariant} -f %{_datadir}/selinux/devel/Makefile
-  mv bitcoin.pp bitcoin.pp.${selinuxvariant}
+  mv %{name}.pp %{name}.pp.${selinuxvariant}
   make NAME=${selinuxvariant} -f %{_datadir}/selinux/devel/Makefile clean
 done
 popd
-
 
 %check
 # Run all the tests
 make check
 # Run all the other tests
 pushd src
-srcdir=. test/bitcoin-util-test.py
+srcdir=. test/%{name}-util-test.py
 popd
 #LD_LIBRARY_PATH=/opt/openssl-compat-bitcoin/lib PYTHONUNBUFFERED=1 qa/pull-tester/rpc-tests.py
 
-
 %install
-cp contrib/debian/examples/bitcoin.conf bitcoin.conf.example
+cp contrib/debian/examples/%{name}.conf %{name}.conf.example
 
 make INSTALL="install -p" CP="cp -p" DESTDIR=%{buildroot} install
 
@@ -204,80 +206,103 @@ make INSTALL="install -p" CP="cp -p" DESTDIR=%{buildroot} install
 mkdir -p -m 755 %{buildroot}%{_sbindir}
 mv %{buildroot}%{_bindir}/bitcoind %{buildroot}%{_sbindir}/bitcoind
 
+# Temporary files
+mkdir -p %{buildroot}%{_tmpfilesdir}
+install -m 0644 %{SOURCE1} %{buildroot}%{_tmpfilesdir}/%{name}.conf
+install -d -m 0755 %{buildroot}/run/%{name}/
+touch %{buildroot}/run/%{name}.pid
+chmod 0644 %{buildroot}/run/%{name}.pid
+
 # Install ancillary files
-mkdir -p -m 755 %{buildroot}%{_datadir}/pixmaps
-install -D -m644 -p share/pixmaps/bitcoin*.{png,xpm,ico} %{buildroot}%{_datadir}/pixmaps/
-install -D -m644 -p contrib/debian/bitcoin-qt.desktop %{buildroot}%{_datadir}/applications/bitcoin-qt.desktop
-desktop-file-validate %{buildroot}%{_datadir}/applications/bitcoin-qt.desktop
-install -D -m644 -p contrib/debian/bitcoin-qt.protocol %{buildroot}%{_datadir}/kde4/services/bitcoin-qt.protocol
-install -D -m644 -p %{SOURCE1} %{buildroot}%{_tmpfilesdir}/bitcoin.conf
-install -D -m600 -p %{SOURCE2} %{buildroot}%{_sysconfdir}/sysconfig/bitcoin
-install -D -m644 -p %{SOURCE3} %{buildroot}%{_unitdir}/bitcoin.service
-install -d -m750 -p %{buildroot}%{_localstatedir}/lib/bitcoin
-install -d -m750 -p %{buildroot}%{_sysconfdir}/bitcoin
-install -D -m644 -p contrib/bitcoin-cli.bash-completion %{buildroot}%{_compldir}/bitcoin-cli
+install -D -m644 -p contrib/debian/%{name}-qt.protocol %{buildroot}%{_datadir}/kde4/services/%{name}-qt.protocol
+install -D -m600 -p %{SOURCE2} %{buildroot}%{_sysconfdir}/sysconfig/%{name}
+install -D -m644 -p %{SOURCE3} %{buildroot}%{_unitdir}/%{name}.service
+install -d -m750 -p %{buildroot}%{_localstatedir}/lib/%{name}
+install -d -m750 -p %{buildroot}%{_sysconfdir}/%{name}
+
+# Desktop file
+desktop-file-install \
+    --dir=%{buildroot}%{_datadir}/applications \
+    --remove-key=Encoding \
+    --set-key=Icon --set-value="%{name}" \
+    contrib/debian/%{name}-qt.desktop
+desktop-file-validate %{buildroot}%{_datadir}/applications/%{name}-qt.desktop
+
+# Icons
+for size in 16 32 64 128 256; do
+    install -p -D -m 644 share/pixmaps/%{name}${size}.png \
+        %{buildroot}%{_datadir}/icons/hicolor/${size}x${size}/apps/%{name}.png
+done
+rm -f %{buildroot}%{_datadir}/pixmaps/%{name}*
+
+# Bash completion
+install -D -m644 -p contrib/%{name}-cli.bash-completion %{buildroot}%{_compldir}/%{name}-cli
 install -D -m644 -p contrib/bitcoind.bash-completion %{buildroot}%{_compldir}/bitcoind
-install -D -m644 -p doc/man/bitcoind.1 %{buildroot}%{_mandir}/man1/bitcoind.1
-install -D -m644 -p doc/man/bitcoin-cli.1 %{buildroot}%{_mandir}/man1/bitcoin-cli.1
-install -D -m644 -p doc/man/bitcoin-qt.1 %{buildroot}%{_mandir}/man1/bitcoin-qt.1
-gzip %{buildroot}%{_mandir}/man1/bitcoind.1
-gzip %{buildroot}%{_mandir}/man1/bitcoin-cli.1
-gzip %{buildroot}%{_mandir}/man1/bitcoin-qt.1
+
+# Man pages
+mkdir -p %{buildroot}%{_mandir}/man1/
+for i in bitcoind %{name}-cli %{name}-qt; do
+    install -m644 -p doc/man/$i.1 %{buildroot}%{_mandir}/man1/
+    gzip %{buildroot}%{_mandir}/man1/$i.1
+done
 
 # Remove test files so that they aren't shipped. Tests have already been run.
 rm -f %{buildroot}%{_bindir}/test_*
 
 # We don't ship bench_bitcoin right now
-rm -f %{buildroot}%{_bindir}/bench_bitcoin
+rm -f %{buildroot}%{_bindir}/bench_%{name}
 
 # Install SELinux policy
 for selinuxvariant in %{selinux_variants}
 do
     install -d %{buildroot}%{_datadir}/selinux/${selinuxvariant}
-    install -p -m 644 contrib/rpm/bitcoin.pp.${selinuxvariant} \
-        %{buildroot}%{_datadir}/selinux/${selinuxvariant}/bitcoin.pp
+    install -p -m 644 contrib/rpm/%{name}.pp.${selinuxvariant} \
+        %{buildroot}%{_datadir}/selinux/${selinuxvariant}/%{name}.pp
 done
 
+%post core
+/bin/touch --no-create %{_datadir}/icons/hicolor &>/dev/null || :
 
-%clean
-rm -rf %{buildroot}
+%postun core
+if [ $1 -eq 0 ] ; then
+    /bin/touch --no-create %{_datadir}/icons/hicolor &>/dev/null
+    /usr/bin/gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
+fi
 
+%posttrans core
+/usr/bin/gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 
 %pre server
-getent group bitcoin >/dev/null || groupadd -r bitcoin
-getent passwd bitcoin >/dev/null ||
-    useradd -r -g bitcoin -d /var/lib/bitcoin -s /sbin/nologin \
-    -c "Bitcoin wallet server" bitcoin
+getent group %{name} >/dev/null || groupadd -r %{name}
+getent passwd %{name} >/dev/null ||
+    useradd -r -g %{name} -d /var/lib/%{name} -s /sbin/nologin \
+    -c "Bitcoin wallet server" %{name}
 exit 0
 
-
 %post server
-%systemd_post bitcoin.service
+%systemd_post %{name}.service
 for selinuxvariant in %{selinux_variants}
 do
     /usr/sbin/semodule -s ${selinuxvariant} -i \
-        %{_datadir}/selinux/${selinuxvariant}/bitcoin.pp \
+        %{_datadir}/selinux/${selinuxvariant}/%{name}.pp \
         &> /dev/null || :
 done
 # FIXME This is less than ideal, but until dwalsh gives me a better way...
-/usr/sbin/semanage port -a -t bitcoin_port_t -p tcp 8332
-/usr/sbin/semanage port -a -t bitcoin_port_t -p tcp 8333
-/usr/sbin/semanage port -a -t bitcoin_port_t -p tcp 18332
-/usr/sbin/semanage port -a -t bitcoin_port_t -p tcp 18333
-/sbin/fixfiles -R bitcoin-server restore &> /dev/null || :
-/sbin/restorecon -R %{_localstatedir}/lib/bitcoin || :
-
+/usr/sbin/semanage port -a -t %{name}_port_t -p tcp 8332
+/usr/sbin/semanage port -a -t %{name}_port_t -p tcp 8333
+/usr/sbin/semanage port -a -t %{name}_port_t -p tcp 18332
+/usr/sbin/semanage port -a -t %{name}_port_t -p tcp 18333
+/sbin/fixfiles -R %{name}-server restore &> /dev/null || :
+/sbin/restorecon -R %{_localstatedir}/lib/%{name} || :
 
 %posttrans server
 /usr/bin/systemd-tmpfiles --create
 
-
 %preun server
-%systemd_preun bitcoin.service
-
+%systemd_preun %{name}.service
 
 %postun server
-%systemd_postun bitcoin.service
+%systemd_postun_with_restart %{name}.service
 if [ $1 -eq 0 ] ; then
     # FIXME This is less than ideal, but until dwalsh gives me a better way...
     /usr/sbin/semanage port -d -p tcp 8332
@@ -286,30 +311,29 @@ if [ $1 -eq 0 ] ; then
     /usr/sbin/semanage port -d -p tcp 18333
     for selinuxvariant in %{selinux_variants}
     do
-        /usr/sbin/semodule -s ${selinuxvariant} -r bitcoin \
+        /usr/sbin/semodule -s ${selinuxvariant} -r %{name} \
         &> /dev/null || :
     done
-    /sbin/fixfiles -R bitcoin-server restore &> /dev/null || :
-    [ -d %{_localstatedir}/lib/bitcoin ] && \
-        /sbin/restorecon -R %{_localstatedir}/lib/bitcoin \
+    /sbin/fixfiles -R %{name}-server restore &> /dev/null || :
+    [ -d %{_localstatedir}/lib/%{name} ] && \
+        /sbin/restorecon -R %{_localstatedir}/lib/%{name} \
         &> /dev/null || :
 fi
 
-
 %files core
-%doc README.md README.gui.redhat doc/assets-attribution.md doc/bips.md doc/files.md doc/reduce-traffic.md doc/release-notes.md doc/tor.md bitcoin.conf.example
-%{_bindir}/bitcoin-qt
-%{_datadir}/applications/bitcoin-qt.desktop
-%{_datadir}/kde4/services/bitcoin-qt.protocol
-%{_datadir}/pixmaps/*
-%{_mandir}/man1/bitcoin-qt.1*
-
+%license COPYING
+%doc README.md README.gui.redhat %{name}.conf.example
+%doc doc/assets-attribution.md doc/bips.md doc/files.md doc/reduce-traffic.md doc/release-notes.md doc/tor.md
+%{_bindir}/%{name}-qt
+%{_datadir}/applications/%{name}-qt.desktop
+%{_datadir}/kde4/services/%{name}-qt.protocol
+%{_datadir}/icons/hicolor/*/apps/%{name}.png
+%{_mandir}/man1/%{name}-qt.1*
 
 %files libs
 %license COPYING
 %doc doc/README.md doc/shared-libraries.md
 %{_libdir}/libbitcoinconsensus.so*
-
 
 %files devel
 %doc doc/README.md doc/developer-notes.md doc/shared-libraries.md
@@ -318,30 +342,39 @@ fi
 %{_libdir}/libbitcoinconsensus.la
 %{_libdir}/pkgconfig/libbitcoinconsensus.pc
 
-
 %files utils
-%doc README.utils.redhat bitcoin.conf.example doc/README.md
-%{_bindir}/bitcoin-cli
-%{_bindir}/bitcoin-tx
-%{_compldir}/bitcoin-cli
-%{_mandir}/man1/bitcoin-cli.1*
-%{_mandir}/man1/bitcoin-tx.1*
-
+%license COPYING
+%doc README.utils.redhat %{name}.conf.example
+%doc doc/README.md
+%{_bindir}/%{name}-cli
+%{_bindir}/%{name}-tx
+%{_compldir}/%{name}-cli
+%{_mandir}/man1/%{name}-cli.1*
+%{_mandir}/man1/%{name}-tx.1*
 
 %files server
-%doc bitcoin.conf.example README.server.redhat doc/README.md doc/REST-interface.md doc/bips.md doc/dnsseed-policy.md doc/files.md doc/reduce-traffic.md doc/release-notes.md doc/tor.md doc/zmq.md
-%dir %attr(750,bitcoin,bitcoin) %{_localstatedir}/lib/bitcoin
-%dir %attr(750,bitcoin,bitcoin) %{_sysconfdir}/bitcoin
-%config(noreplace) %attr(600,root,root) %{_sysconfdir}/sysconfig/bitcoin
-%{_sbindir}/bitcoind
-%{_unitdir}/bitcoin.service
-%{_tmpfilesdir}/bitcoin.conf
-%{_mandir}/man1/bitcoind.1*
+%license COPYING
+%doc %{name}.conf.example README.server.redhat doc/README.md doc/REST-interface.md doc/bips.md doc/dnsseed-policy.md doc/files.md doc/reduce-traffic.md doc/release-notes.md doc/tor.md doc/zmq.md
+%dir %attr(750,%{name},%{name}) %{_localstatedir}/lib/%{name}
+%dir %attr(750,%{name},%{name}) %{_sysconfdir}/%{name}
+%dir /run/%{name}/
+%verify(not size mtime md5) /run/%{name}.pid
+%config(noreplace) %attr(600,root,root) %{_sysconfdir}/sysconfig/%{name}
 %{_compldir}/bitcoind
-%{_datadir}/selinux/*/bitcoin.pp
-
+%{_datadir}/selinux/*/%{name}.pp
+%{_mandir}/man1/bitcoind.1*
+%{_sbindir}/bitcoind
+%{_tmpfilesdir}/%{name}.conf
+%{_unitdir}/%{name}.service
 
 %changelog
+* Sun Jul 23 2017 Simone Caronni <negativo17@gmail.com> - 0.14.2-3
+- Clean up SPEC file. Re-add license to all other subpackages that can be
+  installed independently.
+- Update temporary files part as per packaging guidelines.
+- Update installation of desktop files and icons.
+- Update build options.
+
 * Wed Jul 12 2017 Simone Caronni <negativo17@gmail.com> - 0.14.2-2
 - Update to segwit 1.0 release. Drop patch and use official tag as it contains a
   lot of 0.14.3 backports. Use tag and not tarball as they dropped most of the
