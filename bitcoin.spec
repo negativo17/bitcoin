@@ -194,7 +194,7 @@ make check
 pushd src
 srcdir=. test/%{name}-util-test.py
 popd
-#LD_LIBRARY_PATH=/opt/openssl-compat-bitcoin/lib PYTHONUNBUFFERED=1 qa/pull-tester/rpc-tests.py
+LD_LIBRARY_PATH=/opt/openssl-compat-bitcoin/lib PYTHONUNBUFFERED=1 qa/pull-tester/rpc-tests.py
 
 %install
 cp contrib/debian/examples/%{name}.conf %{name}.conf.example
