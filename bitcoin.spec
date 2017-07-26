@@ -288,10 +288,10 @@ do
         &> /dev/null || :
 done
 # FIXME This is less than ideal, but until dwalsh gives me a better way...
-/usr/sbin/semanage port -a -t %{name}_port_t -p tcp 8332
-/usr/sbin/semanage port -a -t %{name}_port_t -p tcp 8333
-/usr/sbin/semanage port -a -t %{name}_port_t -p tcp 18332
-/usr/sbin/semanage port -a -t %{name}_port_t -p tcp 18333
+/usr/sbin/semanage port -a -t %{name}_port_t -p tcp 8332 2> /dev/null
+/usr/sbin/semanage port -a -t %{name}_port_t -p tcp 8333 2> /dev/null
+/usr/sbin/semanage port -a -t %{name}_port_t -p tcp 18332 2> /dev/null
+/usr/sbin/semanage port -a -t %{name}_port_t -p tcp 18333 2> /dev/null
 /sbin/fixfiles -R %{name}-server restore &> /dev/null || :
 /sbin/restorecon -R %{_localstatedir}/lib/%{name} || :
 
