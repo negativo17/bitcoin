@@ -2,17 +2,14 @@
 %global selinux_variants mls strict targeted
 %global _compldir %{_datadir}/bash-completion/completions
 
-# Comment to use official
-%global segwit uasfsegwit1.0
-
 Name:       bitcoin
-Version:    0.14.2
-Release:    3%{?dist}
+Version:    0.15.0
+Release:    1%{?dist}
 Summary:    Peer to Peer Cryptographic Currency
 License:    MIT
 URL:        http://bitcoin.org/
 
-Source0:    http://github.com/%{?segwit:UASF}%{!?segwit:bitcoin}/%{name}/archive/v%{version}%{?segwit:-%{segwit}}.tar.gz#/%{name}-%{version}%{?segwit:-%{segwit}}.tar.gz
+Source0:    http://github.com/%{name}/%{name}/archive/v%{version}.tar.gz#/%{name}-%{version}.tar.gz
 Source1:    %{name}-tmpfiles.conf
 Source2:    %{name}.sysconfig
 Source3:    %{name}.service
@@ -21,11 +18,8 @@ Source8:    README.server.redhat
 Source9:    README.utils.redhat
 Source10:   README.gui.redhat
 
-Patch1:     %{name}-0.13.0-test-unicode.patch
-Patch2:     %{name}-0.14.1-test-timeout.patch
-
-# Dest change address patch for Lamassu Bitcoin machine
-Patch99:    %{name}-0.14.0-destchange.patch
+#Patch1:     %{name}-0.13.0-test-unicode.patch
+#Patch2:     %{name}-0.14.1-test-timeout.patch
 
 BuildRequires:  autoconf
 BuildRequires:  automake
@@ -76,8 +70,6 @@ BuildRequires:  zeromq-devel
 BuildRequires:  python3-zmq
 %endif
 
-Conflicts:      bitcoinxt
-Conflicts:      bitcoinclassic
 
 %description
 Bitcoin is a digital cryptographic currency that uses peer-to-peer technology to
@@ -99,8 +91,6 @@ to run a Bitcoin wallet, this is probably the package you want.
 
 %package libs
 Summary:    Peer-to-peer digital currency
-Conflicts:  bitcoinxt-libs
-Conflicts:  bitcoinclassic-libs
 
 %description libs
 This package provides the bitcoinconsensus shared libraries. These libraries
@@ -112,8 +102,6 @@ Unless you know need this package, you probably do not.
 %package devel
 Summary:    Peer-to-peer digital currency
 Requires:   %{name}-libs%{?_isa} = %{version}-%{release}
-Conflicts:  bitcoinxt-devel
-Conflicts:  bitcoinclassic-devel
 
 %description devel
 This package contains the header files and static library for the
@@ -125,8 +113,6 @@ Most people do not need this package installed.
 %package utils
 Summary:    Peer-to-peer digital currency
 Obsoletes:  %{name}-cli <= 0.9.3
-Conflicts:  bitcoinxt-utils
-Conflicts:  bitcoinclassic-utils
 
 %description utils 
 Bitcoin is an experimental new digital currency that enables instant payments to
@@ -147,8 +133,6 @@ Requires:           selinux-policy
 Requires:           policycoreutils-python
 Requires:           openssl-libs
 Requires:           %{name}-utils%{_isa} = %{version}
-Conflicts:          bitcoinxt-server
-Conflicts:          bitcoinclassic-server
 
 %description server
 This package provides a stand-alone bitcoin-core daemon. For most users, this
@@ -161,16 +145,15 @@ If you use the graphical bitcoin-core client then you almost certainly do not
 need this package.
 
 %prep
-%setup -q -n %{name}-%{version}%{?segwit:-%{segwit}}
-%patch1 -p1
-%patch2 -p1
-%patch99 -p1
+%setup -q -n %{name}-%{version}
+#%patch1 -p1
+#%patch2 -p1
 
 # Install README files
 cp -p %{SOURCE8} %{SOURCE9} %{SOURCE10} .
 
 %build
-./autogen.sh
+autoreconf -vif
 %configure \
     --disable-silent-rules \
     --enable-reduce-exports
@@ -190,11 +173,8 @@ popd
 %check
 # Run all the tests
 make check
-# Run all the other tests
-pushd src
-srcdir=. test/%{name}-util-test.py
-popd
-LD_LIBRARY_PATH=/opt/openssl-compat-bitcoin/lib PYTHONUNBUFFERED=1 qa/pull-tester/rpc-tests.py
+
+test/functional/test_runner.py --extended
 
 %install
 cp contrib/debian/examples/%{name}.conf %{name}.conf.example
@@ -368,6 +348,9 @@ fi
 %{_unitdir}/%{name}.service
 
 %changelog
+* Mon Sep 11 2017 Simone Caronni <negativo17@gmail.com> - 0.15.0-1
+- Update to 0.15.0.
+
 * Sun Jul 23 2017 Simone Caronni <negativo17@gmail.com> - 0.14.2-3
 - Clean up SPEC file. Re-add license to all other subpackages that can be
   installed independently.
