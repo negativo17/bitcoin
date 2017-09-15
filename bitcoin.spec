@@ -60,7 +60,6 @@ BuildRequires:  zeromq-devel
 # the testsuite on RHEL7, until Red Hat fixes OpenSSL on RHEL7. It has already
 # been fixed on Fedora. Bitcoin itself no longer needs OpenSSL for secp256k1.
 %if 0%{?rhel}
-BuildRequires:  openssl-compat-bitcoin-libs
 BuildRequires:  python34
 %endif
 
