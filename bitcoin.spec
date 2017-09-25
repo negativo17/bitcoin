@@ -4,7 +4,7 @@
 
 Name:       bitcoin
 Version:    0.15.0
-Release:    1%{?dist}
+Release:    2%{?dist}
 Summary:    Peer to Peer Cryptographic Currency
 License:    MIT
 URL:        http://bitcoin.org/
@@ -347,6 +347,9 @@ fi
 %{_unitdir}/%{name}.service
 
 %changelog
+* Mon Sep 25 2017 Simone Caronni <negativo17@gmail.com> - 0.15.0-2
+- Do not fork in systemd unit.
+
 * Mon Sep 11 2017 Simone Caronni <negativo17@gmail.com> - 0.15.0-1
 - Update to 0.15.0.
 
