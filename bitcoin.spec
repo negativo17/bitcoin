@@ -302,7 +302,7 @@ fi
 %{_includedir}/bitcoinconsensus.h
 %{_libdir}/libbitcoinconsensus.a
 %{_libdir}/libbitcoinconsensus.la
-%{_libdir}/libbitcoinconsensus.so.*
+%{_libdir}/libbitcoinconsensus.so
 %{_libdir}/pkgconfig/libbitcoinconsensus.pc
 
 %files utils
