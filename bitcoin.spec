@@ -40,13 +40,11 @@ BuildRequires:  selinux-policy-devel
 BuildRequires:  selinux-policy-doc
 BuildRequires:  systemd
 
-# There's one last Python 2 script left in the test suite, so we still need
-# both Python 2 and 3 to run all tests.
 %if 0%{?fedora}
-BuildRequires: python2
+BuildRequires: python3
 %endif
 %if 0%{?rhel}
-BuildRequires: python
+BuildRequires: python34
 %endif
 
 # ZeroMQ not testable yet on RHEL due to lack of python3-zmq so
@@ -55,20 +53,6 @@ BuildRequires: python
 BuildRequires:  python3-zmq
 BuildRequires:  zeromq-devel
 %endif
-
-# Python tests still use OpenSSL for secp256k1, so we still need this to run
-# the testsuite on RHEL7, until Red Hat fixes OpenSSL on RHEL7. It has already
-# been fixed on Fedora. Bitcoin itself no longer needs OpenSSL for secp256k1.
-%if 0%{?rhel}
-BuildRequires:  python34
-%endif
-
-# python3-zmq not available on RHEL/CentOS, so don't build it yet
-%if 0%{?fedora}
-BuildRequires:  zeromq-devel
-BuildRequires:  python3-zmq
-%endif
-
 
 %description
 Bitcoin is a digital cryptographic currency that uses peer-to-peer technology to
@@ -111,7 +95,6 @@ Most people do not need this package installed.
 
 %package utils
 Summary:    Peer-to-peer digital currency
-Obsoletes:  %{name}-cli <= 0.9.3
 
 %description utils 
 Bitcoin is an experimental new digital currency that enables instant payments to
@@ -130,7 +113,6 @@ Requires(post):     /usr/sbin/semodule, /sbin/restorecon, /sbin/fixfiles
 Requires(postun):   /usr/sbin/semodule, /sbin/restorecon, /sbin/fixfiles
 Requires:           selinux-policy
 Requires:           policycoreutils-python
-Requires:           openssl-libs
 Requires:           %{name}-utils%{_isa} = %{version}
 
 %description server
@@ -188,9 +170,6 @@ mv %{buildroot}%{_bindir}/bitcoind %{buildroot}%{_sbindir}/bitcoind
 # Temporary files
 mkdir -p %{buildroot}%{_tmpfilesdir}
 install -m 0644 %{SOURCE1} %{buildroot}%{_tmpfilesdir}/%{name}.conf
-install -d -m 0755 %{buildroot}/run/%{name}/
-touch %{buildroot}/run/%{name}.pid
-chmod 0644 %{buildroot}/run/%{name}.pid
 
 # Install ancillary files
 install -D -m644 -p contrib/debian/%{name}-qt.protocol %{buildroot}%{_datadir}/kde4/services/%{name}-qt.protocol
@@ -239,6 +218,13 @@ do
         %{buildroot}%{_datadir}/selinux/${selinuxvariant}/%{name}.pp
 done
 
+%pre server
+getent group %{name} >/dev/null || groupadd -r %{name}
+getent passwd %{name} >/dev/null ||
+    useradd -r -g %{name} -d /var/lib/%{name} -s /sbin/nologin \
+    -c "Bitcoin wallet server" %{name}
+exit 0
+
 %post core
 /bin/touch --no-create %{_datadir}/icons/hicolor &>/dev/null || :
 
@@ -251,12 +237,9 @@ fi
 %posttrans core
 /usr/bin/gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 
-%pre server
-getent group %{name} >/dev/null || groupadd -r %{name}
-getent passwd %{name} >/dev/null ||
-    useradd -r -g %{name} -d /var/lib/%{name} -s /sbin/nologin \
-    -c "Bitcoin wallet server" %{name}
-exit 0
+%post libs -p /sbin/ldconfig
+
+%postun libs -p /sbin/ldconfig
 
 %post server
 %systemd_post %{name}.service
@@ -311,14 +294,15 @@ fi
 
 %files libs
 %license COPYING
-%doc doc/README.md doc/shared-libraries.md
-%{_libdir}/libbitcoinconsensus.so*
+%doc doc/README.md
+%{_libdir}/libbitcoinconsensus.so.*
 
 %files devel
 %doc doc/README.md doc/developer-notes.md doc/shared-libraries.md
 %{_includedir}/bitcoinconsensus.h
 %{_libdir}/libbitcoinconsensus.a
 %{_libdir}/libbitcoinconsensus.la
+%{_libdir}/libbitcoinconsensus.so.*
 %{_libdir}/pkgconfig/libbitcoinconsensus.pc
 
 %files utils
@@ -336,9 +320,9 @@ fi
 %doc %{name}.conf.example README.server.redhat doc/README.md doc/REST-interface.md doc/bips.md doc/dnsseed-policy.md doc/files.md doc/reduce-traffic.md doc/release-notes.md doc/tor.md doc/zmq.md
 %dir %attr(750,%{name},%{name}) %{_localstatedir}/lib/%{name}
 %dir %attr(750,%{name},%{name}) %{_sysconfdir}/%{name}
-%dir /run/%{name}/
-%verify(not size mtime md5) /run/%{name}.pid
-%config(noreplace) %attr(600,root,root) %{_sysconfdir}/sysconfig/%{name}
+%ghost %dir /run/%{name}/
+%ghost /run/%{name}.pid
+%config(noreplace) %attr(644,root,root) %{_sysconfdir}/sysconfig/%{name}
 %{_compldir}/bitcoind
 %{_datadir}/selinux/*/%{name}.pp
 %{_mandir}/man1/bitcoind.1*
