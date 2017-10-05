@@ -3,8 +3,8 @@
 %global _compldir %{_datadir}/bash-completion/completions
 
 Name:       bitcoin
-Version:    0.15.0
-Release:    2%{?dist}
+Version:    0.15.0.1
+Release:    1%{?dist}
 Summary:    Peer to Peer Cryptographic Currency
 License:    MIT
 URL:        http://bitcoin.org/
@@ -331,6 +331,9 @@ fi
 %{_unitdir}/%{name}.service
 
 %changelog
+* Thu Oct 05 2017 Simone Caronni <negativo17@gmail.com> - 0.15.0.1-1
+- Update to 0.15.0.1.
+
 * Mon Sep 25 2017 Simone Caronni <negativo17@gmail.com> - 0.15.0-2
 - Do not fork in systemd unit.
 
