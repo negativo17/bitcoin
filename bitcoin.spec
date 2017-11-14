@@ -3,13 +3,15 @@
 %global _compldir %{_datadir}/bash-completion/completions
 
 Name:       bitcoin
-Version:    0.15.0.1
+Version:    0.15.1
 Release:    1%{?dist}
 Summary:    Peer to Peer Cryptographic Currency
 License:    MIT
 URL:        http://bitcoin.org/
 
 Source0:    http://github.com/%{name}/%{name}/archive/v%{version}.tar.gz#/%{name}-%{version}.tar.gz
+# No contrib folder in the official tarball
+# Source0:    https://bitcoin.org/bin/%{name}-core-%{version}/%{name}-%{version}.tar.gz
 Source1:    %{name}-tmpfiles.conf
 Source2:    %{name}.sysconfig
 Source3:    %{name}.service
@@ -331,6 +333,9 @@ fi
 %{_unitdir}/%{name}.service
 
 %changelog
+* Fri Nov 10 2017 Simone Caronni <negativo17@gmail.com> - 0.15.1-1
+- Update to 0.15.1.
+
 * Thu Oct 05 2017 Simone Caronni <negativo17@gmail.com> - 0.15.0.1-1
 - Update to 0.15.0.1.
 
