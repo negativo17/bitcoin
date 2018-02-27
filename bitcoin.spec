@@ -3,7 +3,7 @@
 %global _compldir %{_datadir}/bash-completion/completions
 
 Name:       bitcoin
-Version:    0.16.0rc4
+Version:    0.16.0
 Release:    1%{?dist}
 Summary:    Peer to Peer Cryptographic Currency
 License:    MIT
@@ -333,6 +333,9 @@ fi
 %{_unitdir}/%{name}.service
 
 %changelog
+* Tue Feb 27 2018 Simone Caronni <negativo17@gmail.com> - 0.16.0-1
+- Update to 0.16.0.
+
 * Fri Feb 16 2018 Simone Caronni <negativo17@gmail.com> - 0.16.0rc4-1
 - Update to 0.16.0rc4.
 
