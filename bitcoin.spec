@@ -3,7 +3,7 @@
 %global _compldir %{_datadir}/bash-completion/completions
 
 Name:       bitcoin
-Version:    0.16.0
+Version:    0.16.1
 Release:    1%{?dist}
 Summary:    Peer to Peer Cryptographic Currency
 License:    MIT
@@ -19,9 +19,6 @@ Source4:    %{name}.init
 Source8:    README.server.redhat
 Source9:    README.utils.redhat
 Source10:   README.gui.redhat
-
-#Patch1:     %{name}-0.13.0-test-unicode.patch
-#Patch2:     %{name}-0.14.1-test-timeout.patch
 
 BuildRequires:  autoconf
 BuildRequires:  automake
@@ -128,9 +125,7 @@ If you use the graphical bitcoin-core client then you almost certainly do not
 need this package.
 
 %prep
-%setup -q -n %{name}-%{version}
-#%patch1 -p1
-#%patch2 -p1
+%autosetup
 
 # Install README files
 cp -p %{SOURCE8} %{SOURCE9} %{SOURCE10} .
@@ -141,7 +136,7 @@ autoreconf -vif
     --disable-silent-rules \
     --enable-reduce-exports
 
-make %{?_smp_mflags}
+%make_build
 
 # Build SELinux policy
 pushd contrib/rpm
@@ -162,7 +157,7 @@ test/functional/test_runner.py --extended
 %install
 cp contrib/debian/examples/%{name}.conf %{name}.conf.example
 
-make INSTALL="install -p" CP="cp -p" DESTDIR=%{buildroot} install
+%make_install
 
 # TODO: Upstream puts bitcoind in the wrong directory. Need to fix the
 # upstream Makefiles to relocate it.
@@ -239,9 +234,7 @@ fi
 %posttrans core
 /usr/bin/gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 
-%post libs -p /sbin/ldconfig
-
-%postun libs -p /sbin/ldconfig
+%ldconfig_scriptlets libs
 
 %post server
 %systemd_post %{name}.service
@@ -333,6 +326,10 @@ fi
 %{_unitdir}/%{name}.service
 
 %changelog
+* Thu Jun 14 2018 Simone Caronni <negativo17@gmail.com> - 0.16.1-1
+- Update to 0.16.1.
+- Update SPEC file.
+
 * Tue Feb 27 2018 Simone Caronni <negativo17@gmail.com> - 0.16.0-1
 - Update to 0.16.0.
 
