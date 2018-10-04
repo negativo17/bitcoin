@@ -3,18 +3,17 @@
 %global _compldir %{_datadir}/bash-completion/completions
 
 Name:       bitcoin
-Version:    0.16.3
+Version:    0.17.0
 Release:    1%{?dist}
 Summary:    Peer to Peer Cryptographic Currency
 License:    MIT
 URL:        http://bitcoin.org/
 
-# No contrib folder in the official tarball at https://bitcoin.org/bin/
 Source0:    http://github.com/%{name}/%{name}/archive/v%{version}.tar.gz#/%{name}-%{version}.tar.gz
 Source1:    %{name}-tmpfiles.conf
 Source2:    %{name}.sysconfig
 Source3:    %{name}.service
-Source4:    %{name}.init
+Source4:    https://github.com/bitcoin-core/packaging/archive/bd5cc05d8b1a9122406a7b6aec006351a6f0e6d5.zip
 Source8:    README.server.redhat
 Source9:    README.utils.redhat
 Source10:   README.gui.redhat
@@ -124,10 +123,15 @@ If you use the graphical bitcoin-core client then you almost certainly do not
 need this package.
 
 %prep
-%autosetup
+%autosetup -a 4
+mv packaging-*/rpm contrib/
+mv packaging-*/debian/* contrib/debian/
 
 # Install README files
 cp -p %{SOURCE8} %{SOURCE9} %{SOURCE10} .
+
+# Prepare sample configuration as example
+mv contrib/debian/examples/%{name}.conf %{name}.conf.example
 
 %build
 autoreconf -vif
@@ -154,12 +158,10 @@ make check
 test/functional/test_runner.py --extended
 
 %install
-cp contrib/debian/examples/%{name}.conf %{name}.conf.example
-
 %make_install
 
 # TODO: Upstream puts bitcoind in the wrong directory. Need to fix the
-# upstream Makefiles to relocate it.
+# upstream Makefiles to install it in the correct place.
 mkdir -p -m 755 %{buildroot}%{_sbindir}
 mv %{buildroot}%{_bindir}/bitcoind %{buildroot}%{_sbindir}/bitcoind
 
@@ -325,6 +327,10 @@ fi
 %{_unitdir}/%{name}.service
 
 %changelog
+* Thu Oct 04 2018 Simone Caronni <negativo17@gmail.com> - 0.17.0-1
+- Update to 0.17.0.
+- Add packaging files which are not in the packaging repository.
+
 * Wed Sep 26 2018 Simone Caronni <negativo17@gmail.com> - 0.16.3-1
 - Update to 0.16.3.
 
