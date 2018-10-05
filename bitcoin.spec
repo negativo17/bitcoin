@@ -18,6 +18,8 @@ Source8:    README.server.redhat
 Source9:    README.utils.redhat
 Source10:   README.gui.redhat
 
+Patch0:     https://github.com/bitcoin/bitcoin/commit/a9cf5c9623ad547d9aeebea2b51c2afcfc0f3f4f.patch
+
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  boost-devel
@@ -38,10 +40,10 @@ BuildRequires:  selinux-policy-doc
 BuildRequires:  systemd
 
 %if 0%{?fedora}
-BuildRequires: python3
+BuildRequires:  python3
 %endif
 %if 0%{?rhel}
-BuildRequires: python34
+BuildRequires:  python34
 %endif
 
 # ZeroMQ not testable yet on RHEL due to lack of python3-zmq so
@@ -123,7 +125,7 @@ If you use the graphical bitcoin-core client then you almost certainly do not
 need this package.
 
 %prep
-%autosetup -a 4
+%autosetup -a 4 -p1
 mv packaging-*/rpm contrib/
 mv packaging-*/debian/* contrib/debian/
 
