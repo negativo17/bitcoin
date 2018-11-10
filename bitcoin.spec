@@ -136,6 +136,9 @@ cp -p %{SOURCE8} %{SOURCE9} %{SOURCE10} .
 # Prepare sample configuration as example
 mv contrib/debian/examples/%{name}.conf %{name}.conf.example
 
+# No network tests in mock
+sed -i -e '/rpc_bind.py/d' test/functional/test_runner.py
+
 %build
 autoreconf -vif
 %configure \
