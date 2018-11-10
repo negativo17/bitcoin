@@ -20,6 +20,7 @@ Source10:   README.gui.redhat
 
 Patch0:     https://github.com/bitcoin/bitcoin/commit/a9cf5c9623ad547d9aeebea2b51c2afcfc0f3f4f.patch
 Patch1:     https://patch-diff.githubusercontent.com/raw/bitcoin/bitcoin/pull/14403.patch
+Patch2:     bitcoin-0.17.0.1-unicode.patch
 
 BuildRequires:  autoconf
 BuildRequires:  automake
