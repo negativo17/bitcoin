@@ -3,7 +3,7 @@
 %global _compldir %{_datadir}/bash-completion/completions
 
 Name:       bitcoin
-Version:    0.17.0
+Version:    0.17.0.1
 Release:    1%{?dist}
 Summary:    Peer to Peer Cryptographic Currency
 License:    MIT
@@ -19,6 +19,7 @@ Source9:    README.utils.redhat
 Source10:   README.gui.redhat
 
 Patch0:     https://github.com/bitcoin/bitcoin/commit/a9cf5c9623ad547d9aeebea2b51c2afcfc0f3f4f.patch
+Patch1:     https://patch-diff.githubusercontent.com/raw/bitcoin/bitcoin/pull/14403.patch
 
 BuildRequires:  autoconf
 BuildRequires:  automake
@@ -329,6 +330,9 @@ fi
 %{_unitdir}/%{name}.service
 
 %changelog
+* Sat Nov 10 2018 Simone Caronni <negativo17@gmail.com> - 0.17.0.1-1
+- Update to 0.17.0.1.
+
 * Thu Oct 04 2018 Simone Caronni <negativo17@gmail.com> - 0.17.0-1
 - Update to 0.17.0.
 - Add packaging files which are not in the packaging repository.
