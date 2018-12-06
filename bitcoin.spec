@@ -4,7 +4,7 @@
 
 Name:       bitcoin
 Version:    0.17.0.1
-Release:    1%{?dist}
+Release:    2%{?dist}
 Summary:    Peer to Peer Cryptographic Currency
 License:    MIT
 URL:        http://bitcoin.org/
@@ -209,6 +209,9 @@ for i in bitcoind %{name}-cli %{name}-qt; do
     gzip %{buildroot}%{_mandir}/man1/$i.1
 done
 
+# Server log directory
+mkdir -p %{buildroot}%{_var}/log/%{name}/
+
 # Remove test files so that they aren't shipped. Tests have already been run.
 rm -f %{buildroot}%{_bindir}/test_*
 
@@ -323,6 +326,8 @@ fi
 %doc %{name}.conf.example README.server.redhat doc/README.md doc/REST-interface.md doc/bips.md doc/dnsseed-policy.md doc/files.md doc/reduce-traffic.md doc/release-notes.md doc/tor.md doc/zmq.md
 %dir %attr(750,%{name},%{name}) %{_localstatedir}/lib/%{name}
 %dir %attr(750,%{name},%{name}) %{_sysconfdir}/%{name}
+%dir %attr(750,%{name},%{name}) %{_var}/log/%{name}
+%ghost %{_var}/log/%{name}/debug.log
 %ghost %dir /run/%{name}/
 %ghost /run/%{name}.pid
 %config(noreplace) %attr(644,root,root) %{_sysconfdir}/sysconfig/%{name}
@@ -334,6 +339,9 @@ fi
 %{_unitdir}/%{name}.service
 
 %changelog
+* Thu Dec 06 2018 Simone Caronni <negativo17@gmail.com> - 0.17.0.1-2
+- Separate log file from working directory.
+
 * Sat Nov 10 2018 Simone Caronni <negativo17@gmail.com> - 0.17.0.1-1
 - Update to 0.17.0.1.
 
