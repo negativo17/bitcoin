@@ -3,7 +3,7 @@ Description=Bitcoin daemon
 After=syslog.target network.target
 
 [Service]
-ExecStart=/usr/sbin/bitcoind -conf=${CONFIG_FILE} -datadir=${DATA_DIR} -pid=${PID_FILE} -debugfile=${DEBUG_FILE} $OPTIONS
+ExecStart=/usr/sbin/bitcoind -conf=${CONFIG_FILE} -datadir=${DATA_DIR} -pid=${PID_FILE} -debuglogfile=${DEBUG_FILE} $OPTIONS
 EnvironmentFile=/etc/sysconfig/bitcoin
 User=bitcoin
 Group=bitcoin

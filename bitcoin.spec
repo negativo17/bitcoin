@@ -4,7 +4,7 @@
 
 Name:       bitcoin
 Version:    0.17.0.1
-Release:    2%{?dist}
+Release:    3%{?dist}
 Summary:    Peer to Peer Cryptographic Currency
 License:    MIT
 URL:        http://bitcoin.org/
@@ -339,6 +339,9 @@ fi
 %{_unitdir}/%{name}.service
 
 %changelog
+* Sat Dec 08 2018 Simone Caronni <negativo17@gmail.com> - 0.17.0.1-3
+- Fix typo.
+
 * Thu Dec 06 2018 Simone Caronni <negativo17@gmail.com> - 0.17.0.1-2
 - Separate log file from working directory.
 
