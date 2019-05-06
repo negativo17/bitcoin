@@ -1,0 +1,12 @@
+diff -Naur bitcoin-0.18.0.old/test/functional/test_runner.py bitcoin-0.18.0/test/functional/test_runner.py
+--- bitcoin-0.18.0.old/test/functional/test_runner.py	2019-05-06 07:22:45.878843570 +0200
++++ bitcoin-0.18.0/test/functional/test_runner.py	2019-05-06 08:53:37.738118588 +0200
+@@ -249,7 +249,7 @@
+     logging.basicConfig(format='%(message)s', level=logging_level)
+ 
+     # Create base test directory
+-    tmpdir = "%s/test_runner_₿_🏃_%s" % (args.tmpdirprefix, datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
++    tmpdir = "%s/test_runner_%s" % (args.tmpdirprefix, datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
+ 
+     os.makedirs(tmpdir)
+ 

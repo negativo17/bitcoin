@@ -3,7 +3,7 @@
 %global _compldir %{_datadir}/bash-completion/completions
 
 Name:       bitcoin
-Version:    0.17.1
+Version:    0.18.0
 Release:    1%{?dist}
 Summary:    Peer to Peer Cryptographic Currency
 License:    MIT
@@ -13,12 +13,12 @@ Source0:    http://github.com/%{name}/%{name}/archive/v%{version}.tar.gz#/%{name
 Source1:    %{name}-tmpfiles.conf
 Source2:    %{name}.sysconfig
 Source3:    %{name}.service
-Source4:    https://github.com/bitcoin-core/packaging/archive/bd5cc05d8b1a9122406a7b6aec006351a6f0e6d5.zip
+Source4:    https://github.com/bitcoin-core/packaging/archive/40f8a131003bb1346a45d78a054db9c5b4b4f0e7.zip
 Source8:    README.server.redhat
 Source9:    README.utils.redhat
 Source10:   README.gui.redhat
 
-Patch0:     bitcoin-0.17.0.1-unicode.patch
+Patch0:     bitcoin-0.18.0-unicode.patch
 
 BuildRequires:  autoconf
 BuildRequires:  automake
@@ -158,6 +158,7 @@ popd
 
 %check
 # Run all the tests
+export LC_ALL=C.UTF-8
 make check
 
 test/functional/test_runner.py --extended
@@ -329,6 +330,7 @@ fi
 %ghost %dir /run/%{name}/
 %ghost /run/%{name}.pid
 %config(noreplace) %attr(644,root,root) %{_sysconfdir}/sysconfig/%{name}
+%{_bindir}/bitcoin-wallet
 %{_compldir}/bitcoind
 %{_datadir}/selinux/*/%{name}.pp
 %{_mandir}/man1/bitcoind.1*
@@ -337,6 +339,9 @@ fi
 %{_unitdir}/%{name}.service
 
 %changelog
+* Mon May 06 2019 Simone Caronni <negativo17@gmail.com> - 0.18.0-1
+- Update to 0.18.0.
+
 * Thu Jan 24 2019 Simone Caronni <negativo17@gmail.com> - 0.17.1-1
 - Update to 0.17.1.
 

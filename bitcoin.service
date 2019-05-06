@@ -9,11 +9,16 @@ User=bitcoin
 Group=bitcoin
 
 Restart=on-failure
-PrivateTmp=true
 TimeoutStopSec=120
 TimeoutStartSec=60
 StartLimitInterval=240
 StartLimitBurst=5
+
+PrivateTmp=true
+ProtectSystem=full
+NoNewPrivileges=true
+PrivateDevices=true
+MemoryDenyWriteExecute=true
 
 [Install]
 WantedBy=multi-user.target
