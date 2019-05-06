@@ -18,8 +18,6 @@ Source8:    README.server.redhat
 Source9:    README.utils.redhat
 Source10:   README.gui.redhat
 
-Patch0:     bitcoin-0.18.0-unicode.patch
-
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  boost-devel
@@ -156,12 +154,16 @@ do
 done
 popd
 
+%if 0%{?fedora}
+
 %check
 # Run all the tests
 export LC_ALL=C.UTF-8
 make check
 
 test/functional/test_runner.py --extended
+
+%endif
 
 %install
 %make_install
@@ -341,6 +343,7 @@ fi
 %changelog
 * Mon May 06 2019 Simone Caronni <negativo17@gmail.com> - 0.18.0-1
 - Update to 0.18.0.
+- Force C.UTF-8 for tests on Fedora and disable EPEL 7 test run.
 
 * Thu Jan 24 2019 Simone Caronni <negativo17@gmail.com> - 0.17.1-1
 - Update to 0.17.1.
