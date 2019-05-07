@@ -4,7 +4,7 @@
 
 Name:       bitcoin
 Version:    0.18.0
-Release:    1%{?dist}
+Release:    2%{?dist}
 Summary:    Peer to Peer Cryptographic Currency
 License:    MIT
 URL:        http://bitcoin.org/
@@ -341,6 +341,9 @@ fi
 %{_unitdir}/%{name}.service
 
 %changelog
+* Tue May 07 2019 Simone Caronni <negativo17@gmail.com> - 0.18.0-2
+- Update systemd unit.
+
 * Mon May 06 2019 Simone Caronni <negativo17@gmail.com> - 0.18.0-1
 - Update to 0.18.0.
 - Force C.UTF-8 for tests on Fedora and disable EPEL 7 test run.
