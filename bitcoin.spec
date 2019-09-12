@@ -3,8 +3,8 @@
 %global _compldir %{_datadir}/bash-completion/completions
 
 Name:       bitcoin
-Version:    0.18.0
-Release:    2%{?dist}
+Version:    0.18.1
+Release:    1%{?dist}
 Summary:    Peer to Peer Cryptographic Currency
 License:    MIT
 URL:        http://bitcoin.org/
@@ -13,7 +13,7 @@ Source0:    http://github.com/%{name}/%{name}/archive/v%{version}.tar.gz#/%{name
 Source1:    %{name}-tmpfiles.conf
 Source2:    %{name}.sysconfig
 Source3:    %{name}.service
-Source4:    https://github.com/bitcoin-core/packaging/archive/40f8a131003bb1346a45d78a054db9c5b4b4f0e7.zip
+Source4:    https://github.com/bitcoin-core/packaging/archive/a48094dca1113fb6096768993d1b80d1a4ab5871.zip
 Source8:    README.server.redhat
 Source9:    README.utils.redhat
 Source10:   README.gui.redhat
@@ -341,6 +341,9 @@ fi
 %{_unitdir}/%{name}.service
 
 %changelog
+* Thu Sep 12 2019 Simone Caronni <negativo17@gmail.com> - 0.18.1-1
+- Update to 0.18.1.
+
 * Tue May 07 2019 Simone Caronni <negativo17@gmail.com> - 0.18.0-2
 - Update systemd unit.
 
