@@ -14,6 +14,9 @@ Source1:    %{name}-tmpfiles.conf
 Source2:    %{name}.sysconfig
 Source3:    %{name}.service
 Source4:    https://github.com/bitcoin-core/packaging/archive/a48094dca1113fb6096768993d1b80d1a4ab5871.zip
+Source5:    %{name}.te
+Source6:    %{name}.fc
+Source7:    %{name}.if
 Source8:    README.server.redhat
 Source9:    README.utils.redhat
 Source10:   README.gui.redhat
@@ -124,8 +127,10 @@ need this package.
 
 %prep
 %autosetup -a 4 -p1
-mv packaging-*/rpm contrib/
 mv packaging-*/debian/* contrib/debian/
+
+# SELinux policy
+cp -p %{SOURCE5} %{SOURCE6} %{SOURCE7} .
 
 # Install README files
 cp -p %{SOURCE8} %{SOURCE9} %{SOURCE10} .
@@ -145,14 +150,12 @@ autoreconf -vif
 %make_build
 
 # Build SELinux policy
-pushd contrib/rpm
 for selinuxvariant in %{selinux_variants}
 do
   make NAME=${selinuxvariant} -f %{_datadir}/selinux/devel/Makefile
   mv %{name}.pp %{name}.pp.${selinuxvariant}
   make NAME=${selinuxvariant} -f %{_datadir}/selinux/devel/Makefile clean
 done
-popd
 
 %if 0%{?fedora}
 
@@ -223,7 +226,7 @@ rm -f %{buildroot}%{_bindir}/bench_%{name}
 for selinuxvariant in %{selinux_variants}
 do
     install -d %{buildroot}%{_datadir}/selinux/${selinuxvariant}
-    install -p -m 644 contrib/rpm/%{name}.pp.${selinuxvariant} \
+    install -p -m 644 %{name}.pp.${selinuxvariant} \
         %{buildroot}%{_datadir}/selinux/${selinuxvariant}/%{name}.pp
 done
 
@@ -336,6 +339,7 @@ fi
 %{_compldir}/bitcoind
 %{_datadir}/selinux/*/%{name}.pp
 %{_mandir}/man1/bitcoind.1*
+%{_mandir}/man1/bitcoin-wallet.1*
 %{_sbindir}/bitcoind
 %{_tmpfilesdir}/%{name}.conf
 %{_unitdir}/%{name}.service
