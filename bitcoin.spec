@@ -3,7 +3,7 @@
 %global _compldir %{_datadir}/bash-completion/completions
 
 Name:       bitcoin
-Version:    0.19.0
+Version:    0.19.0.1
 Release:    1%{?dist}
 Summary:    Peer to Peer Cryptographic Currency
 License:    MIT
@@ -44,6 +44,8 @@ BuildRequires:  zeromq-devel
 
 %if 0%{?rhel} == 7
 BuildRequires:  python36-zmq
+BuildRequires:  devtoolset-7-gcc-c++
+BuildRequires:  devtoolset-7-libatomic-devel
 %else
 BuildRequires:  python3-zmq
 %endif
@@ -136,6 +138,10 @@ mv contrib/debian/examples/%{name}.conf %{name}.conf.example
 sed -i -e '/rpc_bind.py/d' test/functional/test_runner.py
 
 %build
+%if 0%{?rhel} == 7
+. /opt/rh/devtoolset-7/enable
+%endif
+
 autoreconf -vif
 %configure \
     --disable-silent-rules \
@@ -339,6 +345,9 @@ fi
 %{_unitdir}/%{name}.service
 
 %changelog
+* Tue Nov 19 2019 Simone Caronni <negativo17@gmail.com> - 0.19.0.1-1
+- Update to 0.19.0.1.
+
 * Sun Nov 17 2019 Simone Caronni <negativo17@gmail.com> - 0.19.0-1
 - Update to 0.19.0.
 
