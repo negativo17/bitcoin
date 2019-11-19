@@ -3,7 +3,7 @@
 %global _compldir %{_datadir}/bash-completion/completions
 
 Name:       bitcoin
-Version:    0.18.1
+Version:    0.19.0
 Release:    1%{?dist}
 Summary:    Peer to Peer Cryptographic Currency
 License:    MIT
@@ -33,25 +33,19 @@ BuildRequires:  libtool
 BuildRequires:  miniupnpc-devel
 BuildRequires:  openssl-devel
 BuildRequires:  protobuf-devel
+BuildRequires:  python3
 BuildRequires:  qrencode-devel
 BuildRequires:  qt5-linguist
 BuildRequires:  qt5-qtbase-devel
 BuildRequires:  selinux-policy-devel
 BuildRequires:  selinux-policy-doc
 BuildRequires:  systemd
-
-%if 0%{?fedora}
-BuildRequires:  python3
-%endif
-%if 0%{?rhel}
-BuildRequires:  python34
-%endif
-
-# ZeroMQ not testable yet on RHEL due to lack of python3-zmq so
-# enable only for Fedora
-%if 0%{?fedora}
-BuildRequires:  python3-zmq
 BuildRequires:  zeromq-devel
+
+%if 0%{?rhel} == 7
+BuildRequires:  python36-zmq
+%else
+BuildRequires:  python3-zmq
 %endif
 
 %description
@@ -345,6 +339,9 @@ fi
 %{_unitdir}/%{name}.service
 
 %changelog
+* Sun Nov 17 2019 Simone Caronni <negativo17@gmail.com> - 0.19.0-1
+- Update to 0.19.0.
+
 * Thu Sep 12 2019 Simone Caronni <negativo17@gmail.com> - 0.18.1-1
 - Update to 0.18.1.
 
