@@ -4,7 +4,7 @@
 
 Name:       bitcoin
 Version:    0.19.0.1
-Release:    1%{?dist}
+Release:    2%{?dist}
 Summary:    Peer to Peer Cryptographic Currency
 License:    MIT
 URL:        http://bitcoin.org/
@@ -105,10 +105,14 @@ to create custom Bitcoin transactions.
 %package server
 Summary:            Peer-to-peer digital currency
 Requires(pre):      shadow-utils
-Requires(post):     /usr/sbin/semodule, /sbin/restorecon, /sbin/fixfiles
-Requires(postun):   /usr/sbin/semodule, /sbin/restorecon, /sbin/fixfiles
+Requires(post):     policycoreutils
+Requires(postun):   policycoreutils
 Requires:           selinux-policy
+%if 0%{?rhel} == 7
 Requires:           policycoreutils-python
+%else
+Requires:           python3-policycoreutils
+%endif
 Requires:           %{name}-utils%{_isa} = %{version}
 
 %description server
@@ -345,6 +349,9 @@ fi
 %{_unitdir}/%{name}.service
 
 %changelog
+* Fri Feb 21 2020 Simone Caronni <negativo17@gmail.com> - 0.19.0.1-2
+- Fix dependencies with Python SELinux interfaces.
+
 * Tue Nov 19 2019 Simone Caronni <negativo17@gmail.com> - 0.19.0.1-1
 - Update to 0.19.0.1.
 
