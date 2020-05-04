@@ -33,6 +33,7 @@ BuildRequires:  libtool
 BuildRequires:  miniupnpc-devel
 BuildRequires:  openssl-devel
 BuildRequires:  protobuf-devel
+BuildRequires:  procps-ng
 BuildRequires:  python3
 BuildRequires:  qrencode-devel
 BuildRequires:  qt5-linguist
