@@ -3,8 +3,8 @@
 %global _compldir %{_datadir}/bash-completion/completions
 
 Name:       bitcoin
-Version:    0.19.0.1
-Release:    2%{?dist}
+Version:    0.19.1
+Release:    1%{?dist}
 Summary:    Peer to Peer Cryptographic Currency
 License:    MIT
 URL:        http://bitcoin.org/
@@ -349,6 +349,9 @@ fi
 %{_unitdir}/%{name}.service
 
 %changelog
+* Mon May 04 2020 Simone Caronni <negativo17@gmail.com> - 0.19.1-1
+- Update to 0.19.1.
+
 * Fri Feb 21 2020 Simone Caronni <negativo17@gmail.com> - 0.19.0.1-2
 - Fix dependencies with Python SELinux interfaces.
 
