@@ -3,7 +3,7 @@
 %global _compldir %{_datadir}/bash-completion/completions
 
 Name:       bitcoin
-Version:    0.19.1
+Version:    0.20.0
 Release:    1%{?dist}
 Summary:    Peer to Peer Cryptographic Currency
 License:    MIT
@@ -20,8 +20,6 @@ Source7:    %{name}.if
 Source8:    README.server.redhat
 Source9:    README.utils.redhat
 Source10:   README.gui.redhat
-
-Patch0:     https://code.sigidli.com/bitcoin/bitcoin/commit/f117fb00da747147cddfb071c1427a2754c278cd.patch#/%{name}-python38.patch
 
 BuildRequires:  autoconf
 BuildRequires:  automake
@@ -352,6 +350,9 @@ fi
 %{_unitdir}/%{name}.service
 
 %changelog
+* Fri Jun 26 2020 Simone Caronni <negativo17@gmail.com> - 0.20.0-1
+- Update to 0.20.0.
+
 * Mon May 04 2020 Simone Caronni <negativo17@gmail.com> - 0.19.1-1
 - Update to 0.19.1.
 - Fix deprecation message with Python tests.
