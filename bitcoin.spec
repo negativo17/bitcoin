@@ -4,12 +4,12 @@
 
 Name:       bitcoin
 Version:    0.20.0
-Release:    1%{?dist}
+Release:    2%{?dist}
 Summary:    Peer to Peer Cryptographic Currency
 License:    MIT
 URL:        http://bitcoin.org/
 
-Source0:    http://github.com/%{name}/%{name}/archive/v%{version}.tar.gz#/%{name}-%{version}.tar.gz
+Source0:    http://github.com/%{name}/%{name}/archive/v%{version}/%{name}-%{version}.tar.gz
 Source1:    %{name}-tmpfiles.conf
 Source2:    %{name}.sysconfig
 Source3:    %{name}.service
@@ -45,8 +45,8 @@ BuildRequires:  zeromq-devel
 
 %if 0%{?rhel} == 7
 BuildRequires:  python36-zmq
-BuildRequires:  devtoolset-7-gcc-c++
-BuildRequires:  devtoolset-7-libatomic-devel
+BuildRequires:  devtoolset-9-gcc-c++
+BuildRequires:  devtoolset-9-libatomic-devel
 %else
 BuildRequires:  python3-zmq
 %endif
@@ -58,7 +58,6 @@ issuing of bitcoins is carried out collectively by the network.
 
 %package core
 Summary:    Peer to Peer Cryptographic Currency
-Obsoletes:  %{name} < %{version}-%{release}
 Provides:   %{name} = %{version}-%{release}
 
 %description core
@@ -144,13 +143,17 @@ sed -i -e '/rpc_bind.py/d' test/functional/test_runner.py
 
 %build
 %if 0%{?rhel} == 7
-. /opt/rh/devtoolset-7/enable
+. /opt/rh/devtoolset-9/enable
 %endif
 
 autoreconf -vif
 %configure \
     --disable-silent-rules \
-    --enable-reduce-exports
+    --disable-static \
+    --enable-reduce-exports \
+    --enable-util-cli \
+    --enable-util-tx \
+    --enable-util-wallet
 
 %make_build
 
@@ -176,6 +179,8 @@ test/functional/test_runner.py --extended
 %install
 %make_install
 
+find %{buildroot} -name "*.la" -delete
+
 # TODO: Upstream puts bitcoind in the wrong directory. Need to fix the
 # upstream Makefiles to install it in the correct place.
 mkdir -p -m 755 %{buildroot}%{_sbindir}
@@ -189,7 +194,7 @@ install -m 0644 %{SOURCE1} %{buildroot}%{_tmpfilesdir}/%{name}.conf
 install -D -m644 -p contrib/debian/%{name}-qt.protocol %{buildroot}%{_datadir}/kde4/services/%{name}-qt.protocol
 install -D -m600 -p %{SOURCE2} %{buildroot}%{_sysconfdir}/sysconfig/%{name}
 install -D -m644 -p %{SOURCE3} %{buildroot}%{_unitdir}/%{name}.service
-install -d -m750 -p %{buildroot}%{_localstatedir}/lib/%{name}
+install -d -m750 -p %{buildroot}%{_sharedstatedir}/%{name}
 install -d -m750 -p %{buildroot}%{_sysconfdir}/%{name}
 
 # Desktop file
@@ -211,15 +216,8 @@ rm -f %{buildroot}%{_datadir}/pixmaps/%{name}*
 install -D -m644 -p contrib/%{name}-cli.bash-completion %{buildroot}%{_compldir}/%{name}-cli
 install -D -m644 -p contrib/bitcoind.bash-completion %{buildroot}%{_compldir}/bitcoind
 
-# Man pages
-mkdir -p %{buildroot}%{_mandir}/man1/
-for i in bitcoind %{name}-cli %{name}-qt; do
-    install -m644 -p doc/man/$i.1 %{buildroot}%{_mandir}/man1/
-    gzip %{buildroot}%{_mandir}/man1/$i.1
-done
-
 # Server log directory
-mkdir -p %{buildroot}%{_var}/log/%{name}/
+mkdir -p %{buildroot}%{_localstatedir}/log/%{name}/
 
 # Remove test files so that they aren't shipped. Tests have already been run.
 rm -f %{buildroot}%{_bindir}/test_*
@@ -242,6 +240,7 @@ getent passwd %{name} >/dev/null ||
     -c "Bitcoin wallet server" %{name}
 exit 0
 
+%if 0%{?rhel} == 7
 %post core
 /bin/touch --no-create %{_datadir}/icons/hicolor &>/dev/null || :
 
@@ -253,6 +252,7 @@ fi
 
 %posttrans core
 /usr/bin/gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
+%endif
 
 %ldconfig_scriptlets libs
 
@@ -270,7 +270,7 @@ done
 /usr/sbin/semanage port -a -t %{name}_port_t -p tcp 18332 2> /dev/null
 /usr/sbin/semanage port -a -t %{name}_port_t -p tcp 18333 2> /dev/null
 /sbin/fixfiles -R %{name}-server restore &> /dev/null || :
-/sbin/restorecon -R %{_localstatedir}/lib/%{name} || :
+/sbin/restorecon -R %{_sharedstatedir}/%{name} || :
 
 %posttrans server
 /usr/bin/systemd-tmpfiles --create
@@ -292,8 +292,8 @@ if [ $1 -eq 0 ] ; then
         &> /dev/null || :
     done
     /sbin/fixfiles -R %{name}-server restore &> /dev/null || :
-    [ -d %{_localstatedir}/lib/%{name} ] && \
-        /sbin/restorecon -R %{_localstatedir}/lib/%{name} \
+    [ -d %{_sharedstatedir}/%{name} ] && \
+        /sbin/restorecon -R %{_sharedstatedir}/%{name} \
         &> /dev/null || :
 fi
 
@@ -310,13 +310,12 @@ fi
 %files libs
 %license COPYING
 %doc doc/README.md
-%{_libdir}/libbitcoinconsensus.so.*
+%{_libdir}/libbitcoinconsensus.so.0
+%{_libdir}/libbitcoinconsensus.so.0.0.0
 
 %files devel
 %doc doc/README.md doc/developer-notes.md doc/shared-libraries.md
 %{_includedir}/bitcoinconsensus.h
-%{_libdir}/libbitcoinconsensus.a
-%{_libdir}/libbitcoinconsensus.la
 %{_libdir}/libbitcoinconsensus.so
 %{_libdir}/pkgconfig/libbitcoinconsensus.pc
 
@@ -333,12 +332,12 @@ fi
 %files server
 %license COPYING
 %doc %{name}.conf.example README.server.redhat doc/README.md doc/REST-interface.md doc/bips.md doc/dnsseed-policy.md doc/files.md doc/reduce-traffic.md doc/release-notes.md doc/tor.md doc/zmq.md
-%dir %attr(750,%{name},%{name}) %{_localstatedir}/lib/%{name}
+%dir %attr(750,%{name},%{name}) %{_sharedstatedir}/%{name}
 %dir %attr(750,%{name},%{name}) %{_sysconfdir}/%{name}
-%dir %attr(750,%{name},%{name}) %{_var}/log/%{name}
-%ghost %{_var}/log/%{name}/debug.log
-%ghost %dir /run/%{name}/
-%ghost /run/%{name}.pid
+%dir %attr(750,%{name},%{name}) %{_localstatedir}/log/%{name}
+%ghost %{_localstatedir}/log/%{name}/debug.log
+%ghost %dir %{_rundir}/%{name}/
+%ghost %{_rundir}/%{name}.pid
 %config(noreplace) %attr(644,root,root) %{_sysconfdir}/sysconfig/%{name}
 %{_bindir}/bitcoin-wallet
 %{_compldir}/bitcoind
@@ -350,6 +349,16 @@ fi
 %{_unitdir}/%{name}.service
 
 %changelog
+* Tue Jun 30 2020 Simone Caronni <negativo17@gmail.com> - 0.20.0-2
+- Update Source0 URL.
+- Do not obsolete "bitcoin", just leave the provider for it.
+- Let the build install the man pages.
+- Make sure old post scriptlets run only on RHEL/CentOS 7.
+- Do not install static library and archive.
+- Be explicit with share object versions.
+- Use macros for more directories.
+- Use GCC 9 and not 7 to build on RHEL/CentOS 7.
+
 * Fri Jun 26 2020 Simone Caronni <negativo17@gmail.com> - 0.20.0-1
 - Update to 0.20.0.
 
