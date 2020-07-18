@@ -4,12 +4,12 @@
 
 Name:       bitcoin
 Version:    0.20.0
-Release:    2%{?dist}
+Release:    3%{?dist}
 Summary:    Peer to Peer Cryptographic Currency
 License:    MIT
 URL:        http://bitcoin.org/
 
-Source0:    http://github.com/%{name}/%{name}/archive/v%{version}/%{name}-%{version}.tar.gz
+Source0:    https://bitcoincore.org/bin/bitcoin-core-%{version}/%{name}-%{version}.tar.gz
 Source1:    %{name}-tmpfiles.conf
 Source2:    %{name}.sysconfig
 Source3:    %{name}.service
@@ -21,11 +21,21 @@ Source8:    README.server.redhat
 Source9:    README.utils.redhat
 Source10:   README.gui.redhat
 
+# In .gitignore, so no chance to commit to SCM:
+Source20:   %{url}/bin/bitcoin-core-%{version}/SHA256SUMS.asc
+
+# To recreate:
+# export key=01EA5486DE18A882D4C2684590C8019E36C2E964
+# gpg2 --keyserver hkp://keyserver.ubuntu.com --recv-keys $key
+# gpg2 --export --export-options export-minimal $key > gpgkey-$key.gpg
+Source21:   gpgkey-01EA5486DE18A882D4C2684590C8019E36C2E964.gpg
+
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  boost-devel
 BuildRequires:  checkpolicy
 BuildRequires:  desktop-file-utils
+BuildRequires:  gnupg2
 BuildRequires:  java
 BuildRequires:  libdb4-cxx-devel
 BuildRequires:  libevent-devel
@@ -76,7 +86,7 @@ This package provides the bitcoinconsensus shared libraries. These libraries
 may be used by third party software to provide consensus verification
 functionality.
 
-Unless you know need this package, you probably do not.
+Unless you know you need this package, you probably do not.
 
 %package devel
 Summary:    Peer-to-peer digital currency
@@ -126,6 +136,10 @@ If you use the graphical bitcoin-core client then you almost certainly do not
 need this package.
 
 %prep
+# Signature verification
+gpgv2 -q --keyring=%{SOURCE21} %{SOURCE20}
+grep -q $(sha256sum %{SOURCE0}) %{SOURCE20}
+
 %autosetup -a 4 -p1
 mv packaging-*/debian/* contrib/debian/
 
@@ -349,6 +363,11 @@ fi
 %{_unitdir}/%{name}.service
 
 %changelog
+* Sat Jul 18 2020 Simone Caronni <negativo17@gmail.com> - 0.20.0-3
+- Add signature verification.
+- Trim changelog.
+- Fix typo in the libs description.
+
 * Tue Jun 30 2020 Simone Caronni <negativo17@gmail.com> - 0.20.0-2
 - Update Source0 URL.
 - Do not obsolete "bitcoin", just leave the provider for it.
@@ -388,69 +407,3 @@ fi
 
 * Thu Jan 24 2019 Simone Caronni <negativo17@gmail.com> - 0.17.1-1
 - Update to 0.17.1.
-
-* Sat Dec 08 2018 Simone Caronni <negativo17@gmail.com> - 0.17.0.1-3
-- Fix typo.
-
-* Thu Dec 06 2018 Simone Caronni <negativo17@gmail.com> - 0.17.0.1-2
-- Separate log file from working directory.
-
-* Sat Nov 10 2018 Simone Caronni <negativo17@gmail.com> - 0.17.0.1-1
-- Update to 0.17.0.1.
-
-* Thu Oct 04 2018 Simone Caronni <negativo17@gmail.com> - 0.17.0-1
-- Update to 0.17.0.
-- Add packaging files which are not in the packaging repository.
-
-* Wed Sep 26 2018 Simone Caronni <negativo17@gmail.com> - 0.16.3-1
-- Update to 0.16.3.
-
-* Fri Jul 27 2018 Simone Caronni <negativo17@gmail.com> - 0.16.2-1
-- Update to 0.16.2.
-
-* Thu Jun 14 2018 Simone Caronni <negativo17@gmail.com> - 0.16.1-1
-- Update to 0.16.1.
-- Update SPEC file.
-
-* Tue Feb 27 2018 Simone Caronni <negativo17@gmail.com> - 0.16.0-1
-- Update to 0.16.0.
-
-* Fri Feb 16 2018 Simone Caronni <negativo17@gmail.com> - 0.16.0rc4-1
-- Update to 0.16.0rc4.
-
-* Fri Nov 10 2017 Simone Caronni <negativo17@gmail.com> - 0.15.1-1
-- Update to 0.15.1.
-
-* Thu Oct 05 2017 Simone Caronni <negativo17@gmail.com> - 0.15.0.1-1
-- Update to 0.15.0.1.
-
-* Mon Sep 25 2017 Simone Caronni <negativo17@gmail.com> - 0.15.0-2
-- Do not fork in systemd unit.
-
-* Mon Sep 11 2017 Simone Caronni <negativo17@gmail.com> - 0.15.0-1
-- Update to 0.15.0.
-
-* Sun Jul 23 2017 Simone Caronni <negativo17@gmail.com> - 0.14.2-3
-- Clean up SPEC file. Re-add license to all other subpackages that can be
-  installed independently.
-- Update temporary files part as per packaging guidelines.
-- Update installation of desktop files and icons.
-- Update build options.
-
-* Wed Jul 12 2017 Simone Caronni <negativo17@gmail.com> - 0.14.2-2
-- Update to segwit 1.0 release. Drop patch and use official tag as it contains a
-  lot of 0.14.3 backports. Use tag and not tarball as they dropped most of the
-  contrib folder from it.
-- Add bash completion files.
-
-* Sat Jun 17 2017 Simone Caronni <negativo17@gmail.com> - 0.14.2-1
-- Update to 0.14.2, use official sources + UASF patch.
-- Remove obsolete RPM tags.
-- Leave license only on libs subpackage.
-- Skip RPC tests, they do not run in mock.
-
-* Tue May 23 2017 Simone Caronni <negativo17@gmail.com> - 0.14.1-3
-- Switch to UASF sources.
-
-* Sun May 21 2017 Michael Hampton <bitcoin@ringingliberty.com> 0.14.1-2
-- Add explicit python 2 dependency for F26+
