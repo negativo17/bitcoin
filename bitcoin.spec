@@ -4,7 +4,7 @@
 
 Name:       bitcoin
 Version:    0.20.0
-Release:    3%{?dist}
+Release:    4%{?dist}
 Summary:    Peer to Peer Cryptographic Currency
 License:    MIT
 URL:        http://bitcoin.org/
@@ -179,16 +179,14 @@ do
   make NAME=${selinuxvariant} -f %{_datadir}/selinux/devel/Makefile clean
 done
 
-%if 0%{?fedora}
-
 %check
-# Run all the tests
-export LC_ALL=C.UTF-8
-make check
-
-test/functional/test_runner.py --extended
-
+%if 0%{?rhel} == 7
+. /opt/rh/devtoolset-9/enable
 %endif
+
+export LC_ALL=en_US.UTF-8
+make check
+test/functional/test_runner.py --extended
 
 %install
 %make_install
@@ -363,6 +361,9 @@ fi
 %{_unitdir}/%{name}.service
 
 %changelog
+* Sun Jul 19 2020 Simone Caronni <negativo17@gmail.com> - 0.20.0-4
+- Fix tests on RHEL/CentOS 7.
+
 * Sat Jul 18 2020 Simone Caronni <negativo17@gmail.com> - 0.20.0-3
 - Add signature verification.
 - Trim changelog.
