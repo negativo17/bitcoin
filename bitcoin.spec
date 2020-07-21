@@ -74,6 +74,9 @@ issuing of bitcoins is carried out collectively by the network.
 %package core
 Summary:    Peer to Peer Cryptographic Currency
 Provides:   %{name} = %{version}-%{release}
+Provides:   bundled(secp256k1) = 0.1
+Provides:   bundled(univalue) = 1.1.3
+Provides:   bundled(leveldb) = 1.22.0
 
 %description core
 Bitcoin is a digital cryptographic currency that uses peer-to-peer technology to
@@ -129,6 +132,9 @@ Requires:           policycoreutils-python
 Requires:           python3-policycoreutils
 %endif
 Requires:           %{name}-utils%{_isa} = %{version}
+Provides:           bundled(secp256k1) = 0.1
+Provides:           bundled(univalue) = 1.1.3
+Provides:           bundled(leveldb) = 1.22.0
 
 %description server
 This package provides a stand-alone bitcoin-core daemon. For most users, this
@@ -162,12 +168,17 @@ sed -i -e '/rpc_bind.py/d' test/functional/test_runner.py
 
 autoreconf -vif
 %configure \
+    --disable-bench \
     --disable-silent-rules \
     --disable-static \
     --enable-reduce-exports \
-    --enable-util-cli \
-    --enable-util-tx \
-    --enable-util-wallet
+    --enable-threadlocal \
+    --with-miniupnpc \
+    --with-qrencode \
+    --with-utils \
+    --with-libs \
+    --with-daemon \
+    --with-gui=qt5
 
 %make_build
 
@@ -220,9 +231,6 @@ mkdir -p %{buildroot}%{_localstatedir}/log/%{name}/
 
 # Remove test files so that they aren't shipped. Tests have already been run.
 rm -f %{buildroot}%{_bindir}/test_*
-
-# We don't ship bench_bitcoin right now
-rm -f %{buildroot}%{_bindir}/bench_%{name}
 
 # Install SELinux policy
 for selinuxvariant in %{selinux_variants}
@@ -341,7 +349,8 @@ fi
 
 %files server
 %license COPYING
-%doc %{name}.conf.example README.server.redhat doc/README.md doc/REST-interface.md doc/bips.md doc/dnsseed-policy.md doc/files.md doc/reduce-traffic.md doc/release-notes.md doc/tor.md doc/zmq.md
+%doc %{name}.conf.example README.server.redhat
+%doc doc/README.md doc/REST-interface.md doc/bips.md doc/dnsseed-policy.md doc/files.md doc/reduce-traffic.md doc/release-notes.md doc/tor.md doc/zmq.md
 %dir %attr(750,%{name},%{name}) %{_sharedstatedir}/%{name}
 %dir %attr(750,%{name},%{name}) %{_sysconfdir}/%{name}
 %dir %attr(750,%{name},%{name}) %{_localstatedir}/log/%{name}
@@ -361,13 +370,14 @@ fi
 %changelog
 * Tue Jul 21 2020 Simone Caronni <negativo17@gmail.com> - 0.20.0-6
 - Update systemd unit.
+- Update configuration options.
+- Declared bundled libraries/forks.
 
 * Tue Jul 21 2020 Simone Caronni <negativo17@gmail.com> - 0.20.0-5
 - Use HTTPS for url tag.
 - Reorganize sources. Add cleaned files from the packaging repository directly;
   bash completion snippets are now supported in the main sources.
-- Move check section after install and include desktop file validating in
-  there.
+- Move check section after install and include desktop file validating in there.
 
 * Sun Jul 19 2020 Simone Caronni <negativo17@gmail.com> - 0.20.0-4
 - Fix tests on RHEL/CentOS 7.
@@ -383,7 +393,7 @@ fi
 - Let the build install the man pages.
 - Make sure old post scriptlets run only on RHEL/CentOS 7.
 - Do not install static library and archive.
-- Be explicit with share object versions.
+- Be explicit with shared object versions.
 - Use macros for more directories.
 - Use GCC 9 and not 7 to build on RHEL/CentOS 7.
 
