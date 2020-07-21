@@ -4,7 +4,7 @@
 
 Name:       bitcoin
 Version:    0.20.0
-Release:    5%{?dist}
+Release:    6%{?dist}
 Summary:    Peer to Peer Cryptographic Currency
 License:    MIT
 URL:        https://bitcoin.org/
@@ -359,6 +359,9 @@ fi
 %{_unitdir}/%{name}.service
 
 %changelog
+* Tue Jul 21 2020 Simone Caronni <negativo17@gmail.com> - 0.20.0-6
+- Update systemd unit.
+
 * Tue Jul 21 2020 Simone Caronni <negativo17@gmail.com> - 0.20.0-5
 - Use HTTPS for url tag.
 - Reorganize sources. Add cleaned files from the packaging repository directly;

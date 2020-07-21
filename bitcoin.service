@@ -1,5 +1,6 @@
 [Unit]
 Description=Bitcoin daemon
+Documentation=man:bitcoind(1)
 After=syslog.target network.target
 
 [Service]
@@ -15,6 +16,7 @@ StartLimitInterval=240
 StartLimitBurst=5
 
 PrivateTmp=true
+ProtectHome=true
 ProtectSystem=full
 
 [Install]
