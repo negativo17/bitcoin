@@ -4,31 +4,36 @@
 
 Name:       bitcoin
 Version:    0.20.0
-Release:    4%{?dist}
+Release:    5%{?dist}
 Summary:    Peer to Peer Cryptographic Currency
 License:    MIT
-URL:        http://bitcoin.org/
+URL:        https://bitcoin.org/
 
 Source0:    https://bitcoincore.org/bin/bitcoin-core-%{version}/%{name}-%{version}.tar.gz
 Source1:    %{name}-tmpfiles.conf
 Source2:    %{name}.sysconfig
 Source3:    %{name}.service
-Source4:    https://github.com/bitcoin-core/packaging/archive/a48094dca1113fb6096768993d1b80d1a4ab5871.zip
-Source5:    %{name}.te
-Source6:    %{name}.fc
-Source7:    %{name}.if
-Source8:    README.server.redhat
-Source9:    README.utils.redhat
-Source10:   README.gui.redhat
+Source4:    %{name}-qt.desktop
+Source5:    %{name}-qt.protocol
 
 # In .gitignore, so no chance to commit to SCM:
-Source20:   %{url}/bin/bitcoin-core-%{version}/SHA256SUMS.asc
-
+Source6:    %{url}/bin/bitcoin-core-%{version}/SHA256SUMS.asc
 # To recreate:
 # export key=01EA5486DE18A882D4C2684590C8019E36C2E964
 # gpg2 --keyserver hkp://keyserver.ubuntu.com --recv-keys $key
 # gpg2 --export --export-options export-minimal $key > gpgkey-$key.gpg
-Source21:   gpgkey-01EA5486DE18A882D4C2684590C8019E36C2E964.gpg
+Source7:    gpgkey-01EA5486DE18A882D4C2684590C8019E36C2E964.gpg
+
+# SELinux policy files
+Source8:    %{name}.te
+Source9:    %{name}.fc
+Source10:   %{name}.if
+
+# Documentation
+Source11:   %{name}.conf.example
+Source12:   README.gui.redhat
+Source13:   README.utils.redhat
+Source14:   README.server.redhat
 
 BuildRequires:  autoconf
 BuildRequires:  automake
@@ -137,20 +142,15 @@ need this package.
 
 %prep
 # Signature verification
-gpgv2 -q --keyring=%{SOURCE21} %{SOURCE20}
-grep -q $(sha256sum %{SOURCE0}) %{SOURCE20}
+gpgv2 -q --keyring=%{SOURCE7} %{SOURCE6}
+grep -q $(sha256sum %{SOURCE0}) %{SOURCE6}
 
-%autosetup -a 4 -p1
-mv packaging-*/debian/* contrib/debian/
+%autosetup -p1
 
 # SELinux policy
-cp -p %{SOURCE5} %{SOURCE6} %{SOURCE7} .
-
-# Install README files
 cp -p %{SOURCE8} %{SOURCE9} %{SOURCE10} .
-
-# Prepare sample configuration as example
-mv contrib/debian/examples/%{name}.conf %{name}.conf.example
+# Documentation (sources can not be directly reference with doc)
+cp -p %{SOURCE11} %{SOURCE12} %{SOURCE13} %{SOURCE14} .
 
 # No network tests in mock
 sed -i -e '/rpc_bind.py/d' test/functional/test_runner.py
@@ -179,15 +179,6 @@ do
   make NAME=${selinuxvariant} -f %{_datadir}/selinux/devel/Makefile clean
 done
 
-%check
-%if 0%{?rhel} == 7
-. /opt/rh/devtoolset-9/enable
-%endif
-
-export LC_ALL=en_US.UTF-8
-make check
-test/functional/test_runner.py --extended
-
 %install
 %make_install
 
@@ -203,19 +194,14 @@ mkdir -p %{buildroot}%{_tmpfilesdir}
 install -m 0644 %{SOURCE1} %{buildroot}%{_tmpfilesdir}/%{name}.conf
 
 # Install ancillary files
-install -D -m644 -p contrib/debian/%{name}-qt.protocol %{buildroot}%{_datadir}/kde4/services/%{name}-qt.protocol
 install -D -m600 -p %{SOURCE2} %{buildroot}%{_sysconfdir}/sysconfig/%{name}
 install -D -m644 -p %{SOURCE3} %{buildroot}%{_unitdir}/%{name}.service
+install -D -m644 -p %{SOURCE5} %{buildroot}%{_datadir}/kde4/services/%{name}-qt.protocol
 install -d -m750 -p %{buildroot}%{_sharedstatedir}/%{name}
 install -d -m750 -p %{buildroot}%{_sysconfdir}/%{name}
 
 # Desktop file
-desktop-file-install \
-    --dir=%{buildroot}%{_datadir}/applications \
-    --remove-key=Encoding \
-    --set-key=Icon --set-value="%{name}" \
-    contrib/debian/%{name}-qt.desktop
-desktop-file-validate %{buildroot}%{_datadir}/applications/%{name}-qt.desktop
+desktop-file-install --dir=%{buildroot}%{_datadir}/applications %{SOURCE4}
 
 # Icons
 for size in 16 32 64 128 256; do
@@ -226,7 +212,8 @@ rm -f %{buildroot}%{_datadir}/pixmaps/%{name}*
 
 # Bash completion
 install -D -m644 -p contrib/%{name}-cli.bash-completion %{buildroot}%{_compldir}/%{name}-cli
-install -D -m644 -p contrib/bitcoind.bash-completion %{buildroot}%{_compldir}/bitcoind
+install -D -m644 -p contrib/%{name}-tx.bash-completion %{buildroot}%{_compldir}/%{name}-tx
+install -D -m644 -p contrib/%{name}d.bash-completion %{buildroot}%{_compldir}/%{name}d
 
 # Server log directory
 mkdir -p %{buildroot}%{_localstatedir}/log/%{name}/
@@ -244,6 +231,16 @@ do
     install -p -m 644 %{name}.pp.${selinuxvariant} \
         %{buildroot}%{_datadir}/selinux/${selinuxvariant}/%{name}.pp
 done
+
+%check
+desktop-file-validate %{buildroot}%{_datadir}/applications/%{name}-qt.desktop
+
+%if 0%{?rhel} == 7
+. /opt/rh/devtoolset-9/enable
+%endif
+export LC_ALL=en_US.UTF-8
+make check
+test/functional/test_runner.py --extended
 
 %pre server
 getent group %{name} >/dev/null || groupadd -r %{name}
@@ -311,7 +308,7 @@ fi
 
 %files core
 %license COPYING
-%doc README.md README.gui.redhat %{name}.conf.example
+%doc %{name}.conf.example README.gui.redhat README.md
 %doc doc/assets-attribution.md doc/bips.md doc/files.md doc/reduce-traffic.md doc/release-notes.md doc/tor.md
 %{_bindir}/%{name}-qt
 %{_datadir}/applications/%{name}-qt.desktop
@@ -333,11 +330,12 @@ fi
 
 %files utils
 %license COPYING
-%doc README.utils.redhat %{name}.conf.example
+%doc %{name}.conf.example README.utils.redhat
 %doc doc/README.md
 %{_bindir}/%{name}-cli
 %{_bindir}/%{name}-tx
 %{_compldir}/%{name}-cli
+%{_compldir}/%{name}-tx
 %{_mandir}/man1/%{name}-cli.1*
 %{_mandir}/man1/%{name}-tx.1*
 
@@ -351,16 +349,23 @@ fi
 %ghost %dir %{_rundir}/%{name}/
 %ghost %{_rundir}/%{name}.pid
 %config(noreplace) %attr(644,root,root) %{_sysconfdir}/sysconfig/%{name}
-%{_bindir}/bitcoin-wallet
-%{_compldir}/bitcoind
+%{_bindir}/%{name}-wallet
+%{_compldir}/%{name}d
 %{_datadir}/selinux/*/%{name}.pp
-%{_mandir}/man1/bitcoind.1*
-%{_mandir}/man1/bitcoin-wallet.1*
-%{_sbindir}/bitcoind
+%{_mandir}/man1/%{name}d.1*
+%{_mandir}/man1/%{name}-wallet.1*
+%{_sbindir}/%{name}d
 %{_tmpfilesdir}/%{name}.conf
 %{_unitdir}/%{name}.service
 
 %changelog
+* Tue Jul 21 2020 Simone Caronni <negativo17@gmail.com> - 0.20.0-5
+- Use HTTPS for url tag.
+- Reorganize sources. Add cleaned files from the packaging repository directly;
+  bash completion snippets are now supported in the main sources.
+- Move check section after install and include desktop file validating in
+  there.
+
 * Sun Jul 19 2020 Simone Caronni <negativo17@gmail.com> - 0.20.0-4
 - Fix tests on RHEL/CentOS 7.
 
