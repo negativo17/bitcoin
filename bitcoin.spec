@@ -4,7 +4,7 @@
 
 Name:       bitcoin
 Version:    0.20.0
-Release:    6%{?dist}
+Release:    7%{?dist}
 Summary:    Peer to Peer Cryptographic Currency
 License:    MIT
 URL:        https://bitcoin.org/
@@ -42,7 +42,7 @@ BuildRequires:  checkpolicy
 BuildRequires:  desktop-file-utils
 BuildRequires:  gnupg2
 BuildRequires:  java
-BuildRequires:  libdb4-cxx-devel
+BuildRequires:  libdb-cxx-devel
 BuildRequires:  libevent-devel
 BuildRequires:  libtool
 BuildRequires:  miniupnpc-devel
@@ -173,6 +173,7 @@ autoreconf -vif
     --disable-static \
     --enable-reduce-exports \
     --enable-threadlocal \
+    --with-incompatible-bdb \
     --with-miniupnpc \
     --with-qrencode \
     --with-utils \
@@ -368,6 +369,9 @@ fi
 %{_unitdir}/%{name}.service
 
 %changelog
+* Wed Jul 22 2020 Simone Caronni <negativo17@gmail.com> - 0.20.0-7
+- Use libdb 5.x instead of deprecated 4.x. Fixes build on RHEL/CentOS 8.
+
 * Tue Jul 21 2020 Simone Caronni <negativo17@gmail.com> - 0.20.0-6
 - Update systemd unit.
 - Update configuration options.
