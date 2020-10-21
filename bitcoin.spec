@@ -1,4 +1,6 @@
 %define _hardened_build 1
+# Fails on current Fedora 32 GCC
+%undefine _annotated_build
 %global selinux_variants mls strict targeted
 %global _compldir %{_datadir}/bash-completion/completions
 
