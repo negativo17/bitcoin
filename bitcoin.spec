@@ -3,8 +3,8 @@
 %global _compldir %{_datadir}/bash-completion/completions
 
 Name:       bitcoin
-Version:    0.20.0
-Release:    7%{?dist}
+Version:    0.20.1
+Release:    1%{?dist}
 Summary:    Peer to Peer Cryptographic Currency
 License:    MIT
 URL:        https://bitcoin.org/
@@ -369,6 +369,9 @@ fi
 %{_unitdir}/%{name}.service
 
 %changelog
+* Wed Oct 21 2020 Simone Caronni <negativo17@gmail.com> - 0.20.1-1
+- Update to 0.20.1.
+
 * Wed Jul 22 2020 Simone Caronni <negativo17@gmail.com> - 0.20.0-7
 - Use libdb 5.x instead of deprecated 4.x. Fixes build on RHEL/CentOS 8.
 
