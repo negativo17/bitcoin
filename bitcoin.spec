@@ -6,7 +6,7 @@
 
 Name:       bitcoin
 Version:    0.20.1
-Release:    1%{?dist}
+Release:    2%{?dist}
 Summary:    Peer to Peer Cryptographic Currency
 License:    MIT
 URL:        https://bitcoin.org/
@@ -48,8 +48,6 @@ BuildRequires:  libdb-cxx-devel
 BuildRequires:  libevent-devel
 BuildRequires:  libtool
 BuildRequires:  miniupnpc-devel
-BuildRequires:  openssl-devel
-BuildRequires:  protobuf-devel
 BuildRequires:  procps-ng
 BuildRequires:  python3
 BuildRequires:  qrencode-devel
@@ -371,6 +369,9 @@ fi
 %{_unitdir}/%{name}.service
 
 %changelog
+* Thu Nov 19 2020 Simone Caronni <negativo17@gmail.com> - 0.20.1-2
+- Remove openssl/protobuf from build requirements.
+
 * Wed Oct 21 2020 Simone Caronni <negativo17@gmail.com> - 0.20.1-1
 - Update to 0.20.1.
 
