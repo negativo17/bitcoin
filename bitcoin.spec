@@ -5,8 +5,8 @@
 %global _compldir %{_datadir}/bash-completion/completions
 
 Name:       bitcoin
-Version:    0.20.1
-Release:    2%{?dist}
+Version:    0.21.0
+Release:    1%{?dist}
 Summary:    Peer to Peer Cryptographic Currency
 License:    MIT
 URL:        https://bitcoin.org/
@@ -369,6 +369,9 @@ fi
 %{_unitdir}/%{name}.service
 
 %changelog
+* Fri Jan 15 2021 Simone Caronni <negativo17@gmail.com> - 0.21.0-1
+- Update to 0.21.0.
+
 * Thu Nov 19 2020 Simone Caronni <negativo17@gmail.com> - 0.20.1-2
 - Remove openssl/protobuf from build requirements.
 
