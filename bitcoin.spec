@@ -1,12 +1,10 @@
 %define _hardened_build 1
-# Fails on current Fedora 32 GCC
-%undefine _annotated_build
 %global selinux_variants mls strict targeted
 %global _compldir %{_datadir}/bash-completion/completions
 
 Name:       bitcoin
 Version:    0.21.0
-Release:    1%{?dist}
+Release:    2%{?dist}
 Summary:    Peer to Peer Cryptographic Currency
 License:    MIT
 URL:        https://bitcoin.org/
@@ -39,11 +37,9 @@ Source14:   README.server.redhat
 
 BuildRequires:  autoconf
 BuildRequires:  automake
-BuildRequires:  boost-devel
 BuildRequires:  checkpolicy
 BuildRequires:  desktop-file-utils
 BuildRequires:  gnupg2
-BuildRequires:  java
 BuildRequires:  libdb-cxx-devel
 BuildRequires:  libevent-devel
 BuildRequires:  libtool
@@ -64,6 +60,12 @@ BuildRequires:  devtoolset-9-gcc-c++
 BuildRequires:  devtoolset-9-libatomic-devel
 %else
 BuildRequires:  python3-zmq
+%endif
+
+%if 0%{?rhel}
+BuildRequires:  boost169-devel
+%else
+BuildRequires:  boost-devel
 %endif
 
 %description
@@ -164,6 +166,7 @@ sed -i -e '/rpc_bind.py/d' test/functional/test_runner.py
 %build
 %if 0%{?rhel} == 7
 . /opt/rh/devtoolset-9/enable
+export BOOST_CPPFLAGS="-I%{_includedir}/boost169"
 %endif
 
 autoreconf -vif
@@ -249,7 +252,7 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/%{name}-qt.desktop
 %endif
 export LC_ALL=en_US.UTF-8
 make check
-test/functional/test_runner.py --extended
+test/functional/test_runner.py --tmpdirprefix %{_tmppath} --extended
 
 %pre server
 getent group %{name} >/dev/null || groupadd -r %{name}
@@ -369,6 +372,11 @@ fi
 %{_unitdir}/%{name}.service
 
 %changelog
+* Wed Jan 20 2021 Simone Caronni <negativo17@gmail.com> - 0.21.0-2
+- Update to 0.21.0.
+- Remove java build requirement.
+- Use local folder for test output.
+
 * Fri Jan 15 2021 Simone Caronni <negativo17@gmail.com> - 0.21.0-1
 - Update to 0.21.0.
 
