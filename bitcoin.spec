@@ -4,7 +4,7 @@
 
 Name:       bitcoin
 Version:    0.21.0
-Release:    2%{?dist}
+Release:    3%{?dist}
 Summary:    Peer to Peer Cryptographic Currency
 License:    MIT
 URL:        https://bitcoin.org/
@@ -133,7 +133,6 @@ Requires:           policycoreutils-python
 %else
 Requires:           python3-policycoreutils
 %endif
-Requires:           %{name}-utils%{_isa} = %{version}
 Provides:           bundled(secp256k1) = 0.1
 Provides:           bundled(univalue) = 1.1.3
 Provides:           bundled(leveldb) = 1.22.0
@@ -372,6 +371,9 @@ fi
 %{_unitdir}/%{name}.service
 
 %changelog
+* Sun Mar 07 2021 Simone Caronni <negativo17@gmail.com> - 0.21.0-3
+- Remove requirements for utils subpackage in server subpackage.
+
 * Wed Jan 20 2021 Simone Caronni <negativo17@gmail.com> - 0.21.0-2
 - Update to 0.21.0.
 - Remove java build requirement.
