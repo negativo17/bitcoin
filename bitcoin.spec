@@ -3,7 +3,7 @@
 
 Name:       bitcoin
 Version:    0.21.0
-Release:    3%{?dist}
+Release:    4%{?dist}
 Summary:    Peer to Peer Cryptographic Currency
 License:    MIT
 URL:        https://bitcoin.org/
@@ -47,17 +47,13 @@ BuildRequires:  systemd
 BuildRequires:  zeromq-devel
 
 %if 0%{?rhel} == 7
-BuildRequires:  python36-zmq
+BuildRequires:  boost169-devel
 BuildRequires:  devtoolset-9-gcc-c++
 BuildRequires:  devtoolset-9-libatomic-devel
-%else
-BuildRequires:  python3-zmq
-%endif
-
-%if 0%{?rhel}
-BuildRequires:  boost169-devel
+BuildRequires:  python36-zmq
 %else
 BuildRequires:  boost-devel
+BuildRequires:  python3-zmq
 %endif
 
 %description
@@ -118,7 +114,7 @@ to create custom Bitcoin transactions.
 Summary:            Peer-to-peer digital currency
 Requires(pre):      shadow-utils
 %if 0%{?rhel} >= 8 || 0%{?fedora}
-Requires:           (%{name}-selinux if selinux-policy-%{selinuxtype})
+Requires:           (%{name}-selinux if selinux-policy)
 %endif
 Provides:           bundled(secp256k1) = 0.1
 Provides:           bundled(univalue) = 1.1.3
@@ -310,6 +306,10 @@ fi
 %{_unitdir}/%{name}.service
 
 %changelog
+* Wed Mar 10 2021 Simone Caronni <negativo17@gmail.com> - 0.21.0-4
+- Fix build on RHEL/CentOS 8.
+- Adjust SELinux requirement for server subpackage.
+
 * Wed Mar 10 2021 Simone Caronni <negativo17@gmail.com> - 0.21.0-3
 - Remove requirements for utils subpackage in server subpackage.
 - Separate SELinux package in its own subpackage and use RPM rich booleans on
