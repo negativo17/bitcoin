@@ -1,5 +1,4 @@
 %define _hardened_build 1
-%global selinux_variants mls strict targeted
 %global _compldir %{_datadir}/bash-completion/completions
 
 Name:       bitcoin
@@ -24,11 +23,6 @@ Source6:    %{url}/bin/bitcoin-core-%{version}/SHA256SUMS.asc
 # gpg2 --export --export-options export-minimal $key > gpgkey-$key.gpg
 Source7:    gpgkey-01EA5486DE18A882D4C2684590C8019E36C2E964.gpg
 
-# SELinux policy files
-Source8:    %{name}.te
-Source9:    %{name}.fc
-Source10:   %{name}.if
-
 # Documentation
 Source11:   %{name}.conf.example
 Source12:   README.gui.redhat
@@ -49,8 +43,6 @@ BuildRequires:  python3
 BuildRequires:  qrencode-devel
 BuildRequires:  qt5-linguist
 BuildRequires:  qt5-qtbase-devel
-BuildRequires:  selinux-policy-devel
-BuildRequires:  selinux-policy-doc
 BuildRequires:  systemd
 BuildRequires:  zeromq-devel
 
@@ -125,13 +117,8 @@ to create custom Bitcoin transactions.
 %package server
 Summary:            Peer-to-peer digital currency
 Requires(pre):      shadow-utils
-Requires(post):     policycoreutils
-Requires(postun):   policycoreutils
-Requires:           selinux-policy
-%if 0%{?rhel} == 7
-Requires:           policycoreutils-python
-%else
-Requires:           python3-policycoreutils
+%if 0%{?rhel} >= 8 || 0%{?fedora}
+Requires:           (%{name}-selinux if selinux-policy-%{selinuxtype})
 %endif
 Provides:           bundled(secp256k1) = 0.1
 Provides:           bundled(univalue) = 1.1.3
@@ -154,8 +141,6 @@ grep -q $(sha256sum %{SOURCE0}) %{SOURCE6}
 
 %autosetup -p1
 
-# SELinux policy
-cp -p %{SOURCE8} %{SOURCE9} %{SOURCE10} .
 # Documentation (sources can not be directly reference with doc)
 cp -p %{SOURCE11} %{SOURCE12} %{SOURCE13} %{SOURCE14} .
 
@@ -184,14 +169,6 @@ autoreconf -vif
     --with-gui=qt5
 
 %make_build
-
-# Build SELinux policy
-for selinuxvariant in %{selinux_variants}
-do
-  make NAME=${selinuxvariant} -f %{_datadir}/selinux/devel/Makefile
-  mv %{name}.pp %{name}.pp.${selinuxvariant}
-  make NAME=${selinuxvariant} -f %{_datadir}/selinux/devel/Makefile clean
-done
 
 %install
 %make_install
@@ -235,14 +212,6 @@ mkdir -p %{buildroot}%{_localstatedir}/log/%{name}/
 # Remove test files so that they aren't shipped. Tests have already been run.
 rm -f %{buildroot}%{_bindir}/test_*
 
-# Install SELinux policy
-for selinuxvariant in %{selinux_variants}
-do
-    install -d %{buildroot}%{_datadir}/selinux/${selinuxvariant}
-    install -p -m 644 %{name}.pp.${selinuxvariant} \
-        %{buildroot}%{_datadir}/selinux/${selinuxvariant}/%{name}.pp
-done
-
 %check
 desktop-file-validate %{buildroot}%{_datadir}/applications/%{name}-qt.desktop
 
@@ -278,19 +247,6 @@ fi
 
 %post server
 %systemd_post %{name}.service
-for selinuxvariant in %{selinux_variants}
-do
-    /usr/sbin/semodule -s ${selinuxvariant} -i \
-        %{_datadir}/selinux/${selinuxvariant}/%{name}.pp \
-        &> /dev/null || :
-done
-# FIXME This is less than ideal, but until dwalsh gives me a better way...
-/usr/sbin/semanage port -a -t %{name}_port_t -p tcp 8332 2> /dev/null
-/usr/sbin/semanage port -a -t %{name}_port_t -p tcp 8333 2> /dev/null
-/usr/sbin/semanage port -a -t %{name}_port_t -p tcp 18332 2> /dev/null
-/usr/sbin/semanage port -a -t %{name}_port_t -p tcp 18333 2> /dev/null
-/sbin/fixfiles -R %{name}-server restore &> /dev/null || :
-/sbin/restorecon -R %{_sharedstatedir}/%{name} || :
 
 %posttrans server
 /usr/bin/systemd-tmpfiles --create
@@ -300,22 +256,6 @@ done
 
 %postun server
 %systemd_postun_with_restart %{name}.service
-if [ $1 -eq 0 ] ; then
-    # FIXME This is less than ideal, but until dwalsh gives me a better way...
-    /usr/sbin/semanage port -d -p tcp 8332
-    /usr/sbin/semanage port -d -p tcp 8333
-    /usr/sbin/semanage port -d -p tcp 18332
-    /usr/sbin/semanage port -d -p tcp 18333
-    for selinuxvariant in %{selinux_variants}
-    do
-        /usr/sbin/semodule -s ${selinuxvariant} -r %{name} \
-        &> /dev/null || :
-    done
-    /sbin/fixfiles -R %{name}-server restore &> /dev/null || :
-    [ -d %{_sharedstatedir}/%{name} ] && \
-        /sbin/restorecon -R %{_sharedstatedir}/%{name} \
-        &> /dev/null || :
-fi
 
 %files core
 %license COPYING
@@ -363,7 +303,6 @@ fi
 %config(noreplace) %attr(644,root,root) %{_sysconfdir}/sysconfig/%{name}
 %{_bindir}/%{name}-wallet
 %{_compldir}/%{name}d
-%{_datadir}/selinux/*/%{name}.pp
 %{_mandir}/man1/%{name}d.1*
 %{_mandir}/man1/%{name}-wallet.1*
 %{_sbindir}/%{name}d
@@ -371,8 +310,12 @@ fi
 %{_unitdir}/%{name}.service
 
 %changelog
-* Sun Mar 07 2021 Simone Caronni <negativo17@gmail.com> - 0.21.0-3
+* Wed Mar 10 2021 Simone Caronni <negativo17@gmail.com> - 0.21.0-3
 - Remove requirements for utils subpackage in server subpackage.
+- Separate SELinux package in its own subpackage and use RPM rich booleans on
+  Fedora and RHEL/CentOS 8+ to install the SELinux package if the base policy is
+  installed.
+- Update server README.
 
 * Wed Jan 20 2021 Simone Caronni <negativo17@gmail.com> - 0.21.0-2
 - Update to 0.21.0.

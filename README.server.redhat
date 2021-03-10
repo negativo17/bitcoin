@@ -16,13 +16,6 @@ access controls, i.e. standard Unix permissions. Confining your users, and
 running no unconfined services, is strongly recommended. See the Red Hat
 Enterprise Linux SELinux Guide for further details on SELinux.
 
-On RHEL 6, to start bitcoind manually, use the command
-
-    run_init service bitcoin start
-
-to ensure that the appropriate SELinux contexts are applied. This is not
-necessary if bitcoind is started automatically at boot time.
-
 To repair incorrect SELinux contexts, run the command:
 
     restorecon -r -v /etc/bitcoin /var/lib/bitcoin
