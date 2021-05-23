@@ -2,8 +2,8 @@
 %global _compldir %{_datadir}/bash-completion/completions
 
 Name:       bitcoin
-Version:    0.21.0
-Release:    4%{?dist}
+Version:    0.21.1
+Release:    1%{?dist}
 Summary:    Peer to Peer Cryptographic Currency
 License:    MIT
 URL:        https://bitcoin.org/
@@ -306,6 +306,9 @@ fi
 %{_unitdir}/%{name}.service
 
 %changelog
+* Wed May 12 2021 Simone Caronni <negativo17@gmail.com> - 0.21.1-1
+- Update to 0.21.1.
+
 * Wed Mar 10 2021 Simone Caronni <negativo17@gmail.com> - 0.21.0-4
 - Fix build on RHEL/CentOS 8.
 - Adjust SELinux requirement for server subpackage.
